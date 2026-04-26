@@ -1,83 +1,225 @@
-#Importación tKinter
 import tkinter as tk
+from tkinter import messagebox
 
-#------------------
-#VARIABLES GLOBALES
-#------------------
-TAM=40
+# ======================================================
+# JUEGO 2D DE PLATAFORMAS - MOVIMIENTO SUAVE
+# Sin clases, sin diccionarios, sin sets
+# Usa matriz, listas, variables globales, funciones y Tkinter
+# ======================================================
 
+TAM = 40
 
-# Matriz lógica del mapa
-# 0 = vacío
+# 0 = vacio
 # 1 = bloque / plataforma
 # 2 = escalera
-# 3 = enemigo tipo 1
-# 4 = enemigo tipo 2
+# 3 = enemigo estatico
+# 4 = enemigo movil inicial
 # 5 = trampa
-# 6 = inicio del jugador
+# 6 = inicio
 # 7 = meta
 
 matriz = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0],
-    [0, 0, 0, 1, 1, 1, 0, 0, 3, 0, 2, 0, 0, 4, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 1, 1],
-    [0, 0, 5, 0, 0, 0, 0, 1, 1, 1, 2, 0, 0, 0, 0],
-    [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 3, 0, 0, 5, 0, 2, 0, 0, 0, 0],
-    [6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 4, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    [0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 2, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 0],
+    [0, 0, 2, 0, 0, 0, 2, 3, 7, 4, 0, 0, 4, 0, 0, 2],
+    [0, 0, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2],
+    [0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+    [0, 4, 2, 0, 0, 4, 2, 0, 0, 0, 0, 2, 0, 0, 0, 2],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 5, 2],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 1, 2],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0],
+    [6, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 2, 0, 4, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 
-player_fila = 0
-player_col = 0
+FILAS = len(matriz)
+COLUMNAS = len(matriz[0])
+ANCHO = COLUMNAS * TAM
+ALTO = FILAS * TAM
 
-#-----------------
-#VENTANA PRINCIPAL
-#-----------------
+ANCHO_PLAYER = 24
+ALTO_PLAYER = 30
+
+ANCHO_ENEMIGO = 26
+ALTO_ENEMIGO = 26
+
+VELOCIDAD = 4
+VELOCIDAD_ESCALERA = 3
+GRAVEDAD = 1
+FUERZA_SALTO = -13
+MAX_CAIDA = 12
+
+VELOCIDAD_ENEMIGO = 2
+
+player_x = 0
+player_y = 0
+player_vy = 0
+player_en_suelo = False
+player_en_escalera = False
+
+tecla_izquierda = False
+tecla_derecha = False
+tecla_arriba = False
+tecla_abajo = False
+
+enemigos_x = []
+enemigos_y = []
+enemigos_inicio_x = []
+enemigos_inicio_y = []
+enemigos_direccion = []
+
+juego_activo = True
+mensaje = "Flechas: mover/subir/bajar | Espacio: saltar | R: reiniciar"
+puntaje = 1000
+
 ventana = tk.Tk()
-ventana.title("Juego 2D de Plataformas")
+ventana.title("Juego 2D de Plataformas - Movimiento suave")
 
 canvas = tk.Canvas(
     ventana,
-    width=len(matriz[0]) * TAM,
-    height=len(matriz) * TAM,
+    width=ANCHO,
+    height=ALTO,
     bg="lightblue"
 )
-
 canvas.pack()
 
 
-#-----------------
-#FUNCIONES
-#-----------------
+# ======================================================
+# FUNCIONES DE BUSQUEDA
+# ======================================================
 
 def buscar_inicio():
-    global player_fila, player_col
+    global player_x, player_y, player_vy
+    global player_en_suelo, player_en_escalera
 
-    for fila in range(len(matriz)):
-        for col in range(len(matriz[fila])):
+    for fila in range(FILAS):
+        for col in range(COLUMNAS):
             if matriz[fila][col] == 6:
-                player_fila = fila
-                player_col = col
+                player_x = col * TAM + (TAM - ANCHO_PLAYER) / 2
+                player_y = fila * TAM + (TAM - ALTO_PLAYER)
+                player_vy = 0
+                player_en_suelo = False
+                player_en_escalera = False
 
+
+def buscar_enemigos_moviles():
+    global enemigos_x, enemigos_y
+    global enemigos_inicio_x, enemigos_inicio_y
+    global enemigos_direccion
+
+    enemigos_x = []
+    enemigos_y = []
+    enemigos_inicio_x = []
+    enemigos_inicio_y = []
+    enemigos_direccion = []
+
+    for fila in range(FILAS):
+        for col in range(COLUMNAS):
+            if matriz[fila][col] == 4:
+                x = col * TAM + 7
+                y = (fila + 1) * TAM - ALTO_ENEMIGO
+
+                enemigos_x.append(x)
+                enemigos_y.append(y)
+                enemigos_inicio_x.append(x)
+                enemigos_inicio_y.append(y)
+                enemigos_direccion.append(1)
+
+                # Se borra de la matriz porque ahora se maneja con listas
+                matriz[fila][col] = 0
+
+
+# ======================================================
+# VALIDACIONES DEL MAPA
+# ======================================================
+
+def dentro_del_mapa(fila, col):
+    if fila < 0 or fila >= FILAS:
+        return False
+
+    if col < 0 or col >= COLUMNAS:
+        return False
+
+    return True
+
+
+def obtener_celda(fila, col):
+    if dentro_del_mapa(fila, col) == False:
+        return 1
+
+    return matriz[fila][col]
+
+
+def es_bloque(fila, col):
+    if obtener_celda(fila, col) == 1:
+        return True
+
+    return False
+
+
+def es_escalera(fila, col):
+    if obtener_celda(fila, col) == 2:
+        return True
+
+    return False
+
+
+def rectangulos_chocan(x1, y1, ancho1, alto1, x2, y2, ancho2, alto2):
+    if x1 < x2 + ancho2 and x1 + ancho1 > x2 and y1 < y2 + alto2 and y1 + alto1 > y2:
+        return True
+
+    return False
+
+
+def rectangulo_toca_bloque(x, y, ancho, alto):
+    if x < 0:
+        return True
+
+    if x + ancho > ANCHO:
+        return True
+
+    if y < 0:
+        return True
+
+    if y + alto > ALTO:
+        return True
+
+    col_izq = int(x // TAM)
+    col_der = int((x + ancho - 1) // TAM)
+    fila_arriba = int(y // TAM)
+    fila_abajo = int((y + alto - 1) // TAM)
+
+    for fila in range(fila_arriba, fila_abajo + 1):
+        for col in range(col_izq, col_der + 1):
+            if es_bloque(fila, col):
+                return True
+
+    return False
+
+
+def jugador_sobre_escalera():
+    centro_x = player_x + ANCHO_PLAYER / 2
+    centro_y = player_y + ALTO_PLAYER / 2
+
+    col = int(centro_x // TAM)
+    fila = int(centro_y // TAM)
+
+    if es_escalera(fila, col):
+        return True
+
+    return False
+
+
+# ======================================================
+# DIBUJO
+# ======================================================
 
 def dibujar_mapa():
     canvas.delete("all")
 
-    # Fondo del cielo
-    canvas.create_rectangle(
-        0,
-        0,
-        len(matriz[0]) * TAM,
-        len(matriz) * TAM,
-        fill="#87ceeb",
-        outline=""
-    )
-
-    for fila in range(len(matriz)):
-        for col in range(len(matriz[fila])):
+    for fila in range(FILAS):
+        for col in range(COLUMNAS):
             x1 = col * TAM
             y1 = fila * TAM
             x2 = x1 + TAM
@@ -85,348 +227,404 @@ def dibujar_mapa():
 
             valor = matriz[fila][col]
 
-            # 1 = bloque / plataforma
-            if valor == 1:
-                canvas.create_rectangle(
-                    x1,
-                    y1,
-                    x2,
-                    y2,
-                    fill="#6b4f2a",
-                    outline="#3e2f1c",
-                    width=2
-                )
+            if valor == 0:
+                canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
 
-                # detalle superior del bloque
-                canvas.create_rectangle(
-                    x1,
-                    y1,
-                    x2,
-                    y1 + 8,
-                    fill="#8b6f3d",
-                    outline=""
-                )
+            elif valor == 1:
+                canvas.create_rectangle(x1, y1, x2, y2, fill="#6b4f2a", outline="black")
+                canvas.create_rectangle(x1, y1, x2, y1 + 8, fill="#8b6f3d", outline="")
 
-            # 2 = escalera
             elif valor == 2:
-                # postes verticales
-                canvas.create_rectangle(
-                    x1 + 10,
-                    y1,
-                    x1 + 14,
-                    y2,
-                    fill="#8b5a2b",
-                    outline=""
-                )
+                canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
+                canvas.create_rectangle(x1 + 10, y1, x1 + 14, y2, fill="#8b5a2b", outline="")
+                canvas.create_rectangle(x2 - 14, y1, x2 - 10, y2, fill="#8b5a2b", outline="")
+                canvas.create_line(x1 + 10, y1 + 10, x2 - 10, y1 + 10, width=3, fill="#8b5a2b")
+                canvas.create_line(x1 + 10, y1 + 22, x2 - 10, y1 + 22, width=3, fill="#8b5a2b")
+                canvas.create_line(x1 + 10, y1 + 34, x2 - 10, y1 + 34, width=3, fill="#8b5a2b")
 
-                canvas.create_rectangle(
-                    x2 - 14,
-                    y1,
-                    x2 - 10,
-                    y2,
-                    fill="#8b5a2b",
-                    outline=""
-                )
-
-                # peldaños
-                canvas.create_line(
-                    x1 + 10,
-                    y1 + 8,
-                    x2 - 10,
-                    y1 + 8,
-                    width=3,
-                    fill="#8b5a2b"
-                )
-
-                canvas.create_line(
-                    x1 + 10,
-                    y1 + 20,
-                    x2 - 10,
-                    y1 + 20,
-                    width=3,
-                    fill="#8b5a2b"
-                )
-
-                canvas.create_line(
-                    x1 + 10,
-                    y1 + 32,
-                    x2 - 10,
-                    y1 + 32,
-                    width=3,
-                    fill="#8b5a2b"
-                )
-
-            # 3 = enemigo tipo 1
             elif valor == 3:
-                canvas.create_rectangle(
-                    x1 + 6,
-                    y1 + 8,
-                    x2 - 6,
-                    y2 - 4,
-                    fill="#d62828",
-                    outline="black",
-                    width=2
-                )
+                canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
+                canvas.create_rectangle(x1 + 7, y1 + 7, x2 - 7, y2 - 7, fill="red", outline="black", width=2)
+                canvas.create_text(x1 + TAM / 2, y1 + TAM / 2, text="X", fill="white", font=("Arial", 13, "bold"))
 
-                canvas.create_text(
-                    x1 + TAM / 2,
-                    y1 + TAM / 2,
-                    text="X",
-                    font=("Arial", 13, "bold"),
-                    fill="white"
-                )
-
-            # 4 = enemigo tipo 2
-            elif valor == 4:
-                canvas.create_oval(
-                    x1 + 6,
-                    y1 + 6,
-                    x2 - 6,
-                    y2 - 6,
-                    fill="#7b2cbf",
-                    outline="black",
-                    width=2
-                )
-
-                # ojos
-                canvas.create_oval(
-                    x1 + 14,
-                    y1 + 15,
-                    x1 + 18,
-                    y1 + 19,
-                    fill="white",
-                    outline=""
-                )
-
-                canvas.create_oval(
-                    x1 + 24,
-                    y1 + 15,
-                    x1 + 28,
-                    y1 + 19,
-                    fill="white",
-                    outline=""
-                )
-
-            # 5 = trampa
             elif valor == 5:
-                canvas.create_rectangle(
-                    x1,
-                    y1,
-                    x2,
-                    y2,
-                    fill="#222222",
-                    outline="black"
-                )
+                canvas.create_rectangle(x1, y1, x2, y2, fill="#222222", outline="black")
+                canvas.create_polygon(x1 + 5, y2 - 5, x1 + 15, y1 + 8, x1 + 25, y2 - 5, fill="red", outline="black")
+                canvas.create_polygon(x1 + 18, y2 - 5, x1 + 28, y1 + 8, x1 + 38, y2 - 5, fill="red", outline="black")
 
-                # picos de la trampa
-                canvas.create_polygon(
-                    x1 + 4, y2 - 4,
-                    x1 + 12, y1 + 8,
-                    x1 + 20, y2 - 4,
-                    fill="red",
-                    outline="black"
-                )
-
-                canvas.create_polygon(
-                    x1 + 20, y2 - 4,
-                    x1 + 28, y1 + 8,
-                    x1 + 36, y2 - 4,
-                    fill="red",
-                    outline="black"
-                )
-
-            # 6 = inicio
             elif valor == 6:
-                canvas.create_text(
-                    x1 + TAM / 2,
-                    y1 + TAM / 2,
-                    text="INICIO",
-                    font=("Arial", 7, "bold"),
-                    fill="#0b3d91"
-                )
+                canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
+                canvas.create_text(x1 + TAM / 2, y1 + TAM / 2, text="INICIO", fill="blue", font=("Arial", 7, "bold"))
 
-            # 7 = meta
             elif valor == 7:
-                # poste
-                canvas.create_rectangle(
-                    x1 + 14,
-                    y1 + 4,
-                    x1 + 18,
-                    y2 - 4,
-                    fill="black",
-                    outline=""
-                )
+                canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
+                canvas.create_rectangle(x1 + 12, y1 + 5, x1 + 16, y2 - 5, fill="black", outline="")
+                canvas.create_polygon(x1 + 16, y1 + 5, x2 - 4, y1 + 14, x1 + 16, y1 + 23, fill="gold", outline="black")
+                canvas.create_text(x1 + TAM / 2, y2 - 7, text="META", fill="black", font=("Arial", 7, "bold"))
 
-                # bandera
-                canvas.create_polygon(
-                    x1 + 18, y1 + 5,
-                    x2 - 4, y1 + 12,
-                    x1 + 18, y1 + 20,
-                    fill="gold",
-                    outline="black"
-                )
-    
-                canvas.create_text(
-                    x1 + TAM / 2,
-                    y2 - 6,
-                    text="META",
-                    font=("Arial", 7, "bold"),
-                    fill="black"
-                )
+    dibujar_enemigos_moviles()
     dibujar_player()
-def dibujar_player():
-    x1 = player_col * TAM + 8
-    y1 = player_fila * TAM + 6
-    x2 = x1 + TAM - 16
-    y2 = y1 + TAM - 10
+    dibujar_mensaje()
 
-    # cuerpo del jugador
-    canvas.create_rectangle(
-        x1,
-        y1,
-        x2,
-        y2,
-        fill="#2f80ed",
+
+def dibujar_player():
+    canvas.create_oval(
+        player_x,
+        player_y,
+        player_x + ANCHO_PLAYER,
+        player_y + ALTO_PLAYER,
+        fill="blue",
         outline="black",
         width=2
     )
 
-    # ojo izquierdo
-    canvas.create_oval(
-        x1 + 6,
-        y1 + 7,
-        x1 + 10,
-        y1 + 11,
+    canvas.create_text(
+        player_x + ANCHO_PLAYER / 2,
+        player_y + ALTO_PLAYER / 2,
+        text="P",
         fill="white",
-        outline=""
+        font=("Arial", 14, "bold")
     )
 
-    # ojo derecho
-    canvas.create_oval(
-        x1 + 15,
-        y1 + 7,
-        x1 + 19,
-        y1 + 11,
-        fill="white",
-        outline=""
+
+def dibujar_enemigos_moviles():
+    for i in range(len(enemigos_x)):
+        x = enemigos_x[i]
+        y = enemigos_y[i]
+
+        canvas.create_oval(
+            x,
+            y,
+            x + ANCHO_ENEMIGO,
+            y + ALTO_ENEMIGO,
+            fill="purple",
+            outline="black",
+            width=2
+        )
+
+        canvas.create_text(
+            x + ANCHO_ENEMIGO / 2,
+            y + ALTO_ENEMIGO / 2,
+            text="O",
+            fill="white",
+            font=("Arial", 12, "bold")
+        )
+
+
+def dibujar_mensaje():
+    canvas.create_text(
+        10,
+        10,
+        text=mensaje,
+        anchor="nw",
+        fill="black",
+        font=("Arial", 10, "bold")
     )
-def puede_moverse(fila, col):
-    # Revisa si se sale por arriba o por abajo
-    if fila < 0 or fila >= len(matriz):
+
+    canvas.create_text(
+        10,
+        28,
+        text="Puntaje: " + str(puntaje),
+        anchor="nw",
+        fill="black",
+        font=("Arial", 10, "bold")
+    )
+
+    if juego_activo == False:
+        canvas.create_rectangle(100, 160, 540, 300, fill="white", outline="black", width=3)
+        canvas.create_text(320, 210, text=mensaje, fill="black", font=("Arial", 17, "bold"))
+        canvas.create_text(320, 250, text="Presiona R para reiniciar", fill="black", font=("Arial", 12, "bold"))
+
+
+# ======================================================
+# MOVIMIENTO DEL JUGADOR
+# ======================================================
+
+def mover_horizontal():
+    global player_x
+
+    movimiento = 0
+
+    if tecla_izquierda == True:
+        movimiento = movimiento - VELOCIDAD
+
+    if tecla_derecha == True:
+        movimiento = movimiento + VELOCIDAD
+
+    player_x = player_x + movimiento
+
+    if rectangulo_toca_bloque(player_x, player_y, ANCHO_PLAYER, ALTO_PLAYER):
+        if movimiento > 0:
+            while rectangulo_toca_bloque(player_x, player_y, ANCHO_PLAYER, ALTO_PLAYER):
+                player_x = player_x - 1
+
+        elif movimiento < 0:
+            while rectangulo_toca_bloque(player_x, player_y, ANCHO_PLAYER, ALTO_PLAYER):
+                player_x = player_x + 1
+
+
+def mover_vertical():
+    global player_y, player_vy, player_en_suelo, player_en_escalera
+
+    player_en_escalera = jugador_sobre_escalera()
+
+    if player_en_escalera == True:
+        if tecla_arriba == True:
+            player_vy = -VELOCIDAD_ESCALERA
+
+        elif tecla_abajo == True:
+            player_vy = VELOCIDAD_ESCALERA
+
+        else:
+            player_vy = 0
+
+    else:
+        player_vy = player_vy + GRAVEDAD
+
+        if player_vy > MAX_CAIDA:
+            player_vy = MAX_CAIDA
+
+    player_en_suelo = False
+    player_y = player_y + player_vy
+
+    if rectangulo_toca_bloque(player_x, player_y, ANCHO_PLAYER, ALTO_PLAYER):
+        if player_vy > 0:
+            while rectangulo_toca_bloque(player_x, player_y, ANCHO_PLAYER, ALTO_PLAYER):
+                player_y = player_y - 1
+
+            player_en_suelo = True
+
+        elif player_vy < 0:
+            while rectangulo_toca_bloque(player_x, player_y, ANCHO_PLAYER, ALTO_PLAYER):
+                player_y = player_y + 1
+
+        player_vy = 0
+
+
+def saltar():
+    global player_vy, player_en_suelo
+
+    if juego_activo == False:
+        return
+
+    if player_en_suelo == True:
+        player_vy = FUERZA_SALTO
+        player_en_suelo = False
+
+
+# ======================================================
+# ENEMIGO MOVIL
+# ======================================================
+
+def enemigo_puede_moverse(nuevo_x, enemigo_y):
+    if nuevo_x < 0:
         return False
 
-    # Revisa si se sale por izquierda o derecha
-    if col < 0 or col >= len(matriz[0]):
+    if nuevo_x + ANCHO_ENEMIGO > ANCHO:
         return False
 
     # No puede atravesar bloques
-    if matriz[fila][col] == 1:
+    if rectangulo_toca_bloque(nuevo_x, enemigo_y, ANCHO_ENEMIGO, ALTO_ENEMIGO):
         return False
 
-    return True
+    # Revisa si hay piso debajo del enemigo
+    centro_x = nuevo_x + ANCHO_ENEMIGO / 2
+    abajo_y = enemigo_y + ALTO_ENEMIGO + 1
 
+    col = int(centro_x // TAM)
+    fila = int(abajo_y // TAM)
 
-def esta_en_escalera(fila, col):
-    if fila < 0 or fila >= len(matriz):
-        return False
-
-    if col < 0 or col >= len(matriz[0]):
-        return False
-
-    if matriz[fila][col] == 2:
+    if es_bloque(fila, col):
         return True
 
     return False
 
 
-def tiene_piso(fila, col):
-    # Si está en escalera, la escalera lo sostiene
-    if matriz[fila][col] == 2:
-        return True
+def mover_enemigos_moviles():
+    global enemigos_x, enemigos_direccion
 
-    # Si está en la última fila, no cae más
-    if fila + 1 >= len(matriz):
-        return True
+    for i in range(len(enemigos_x)):
+        nuevo_x = enemigos_x[i] + enemigos_direccion[i] * VELOCIDAD_ENEMIGO
 
-    # Si abajo hay un bloque, está sobre piso
-    if matriz[fila + 1][col] == 1:
-        return True
-
-    return False
-
-
-def revisar_celda_actual():
-    valor = matriz[player_fila][player_col]
-
-    if valor == 7:
-        print("Ganaste, llegaste a la meta.")
-
-    elif valor == 5:
-        print("Perdiste, tocaste una trampa.")
-
-    elif valor == 3:
-        print("Perdiste, tocaste un enemigo tipo 1.")
-
-    elif valor == 4:
-        print("Perdiste, tocaste un enemigo tipo 2.")
-
-
-def aplicar_gravedad():
-    global player_fila
-
-    # Mientras no tenga piso y no esté en escalera, cae
-    while tiene_piso(player_fila, player_col) == False:
-        nueva_fila = player_fila + 1
-
-        if puede_moverse(nueva_fila, player_col):
-            player_fila = nueva_fila
-            revisar_celda_actual()
+        if enemigo_puede_moverse(nuevo_x, enemigos_y[i]):
+            enemigos_x[i] = nuevo_x
         else:
-            break
+            enemigos_direccion[i] = enemigos_direccion[i] * -1
 
 
-def mover(event):
-    global player_fila, player_col
+# ======================================================
+# RESULTADOS
+# ======================================================
 
-    nueva_fila = player_fila
-    nueva_col = player_col
+def jugador_toca_valor(valor_buscado):
+    for fila in range(FILAS):
+        for col in range(COLUMNAS):
+            if matriz[fila][col] == valor_buscado:
+                x = col * TAM
+                y = fila * TAM
 
-    if event.keysym == "Left":
-        nueva_col -= 1
+                if rectangulos_chocan(
+                    player_x,
+                    player_y,
+                    ANCHO_PLAYER,
+                    ALTO_PLAYER,
+                    x,
+                    y,
+                    TAM,
+                    TAM
+                ):
+                    return True
 
-    elif event.keysym == "Right":
-        nueva_col += 1
+    return False
 
-    elif event.keysym == "Up":
-        # Solo puede subir si está en una escalera
-        if esta_en_escalera(player_fila, player_col):
-            nueva_fila -= 1
 
-    elif event.keysym == "Down":
-        # Puede bajar si está en escalera
-        if esta_en_escalera(player_fila, player_col):
-            nueva_fila += 1
+def jugador_toca_enemigo_movil():
+    for i in range(len(enemigos_x)):
+        if rectangulos_chocan(
+            player_x,
+            player_y,
+            ANCHO_PLAYER,
+            ALTO_PLAYER,
+            enemigos_x[i],
+            enemigos_y[i],
+            ANCHO_ENEMIGO,
+            ALTO_ENEMIGO
+        ):
+            return True
 
-        # También puede bajar si la escalera está justo debajo
-        elif player_fila + 1 < len(matriz) and esta_en_escalera(player_fila + 1, player_col):
-            nueva_fila += 1
+    return False
 
-    else:
+
+def revisar_resultado():
+    global juego_activo, mensaje
+
+    if juego_activo == False:
         return
 
-    if puede_moverse(nueva_fila, nueva_col):
-        player_fila = nueva_fila
-        player_col = nueva_col
+    if jugador_toca_valor(7):
+        juego_activo = False
+        mensaje = "¡Ganaste! Puntaje: " + str(puntaje)
+        return
 
-    revisar_celda_actual()
-    aplicar_gravedad()
+    if jugador_toca_valor(3):
+        juego_activo = False
+        mensaje = "Perdiste: tocaste enemigo rojo."
+        return
+
+    if jugador_toca_valor(5):
+        juego_activo = False
+        mensaje = "Perdiste: tocaste una trampa."
+        return
+
+    if jugador_toca_enemigo_movil():
+        juego_activo = False
+        mensaje = "Perdiste: tocaste enemigo morado."
+        return
+
+
+# ======================================================
+# TECLADO
+# ======================================================
+
+def tecla_presionada(event):
+    global tecla_izquierda, tecla_derecha, tecla_arriba, tecla_abajo
+
+    if event.keysym == "Left" or event.keysym == "a":
+        tecla_izquierda = True
+
+    elif event.keysym == "Right" or event.keysym == "d":
+        tecla_derecha = True
+
+    elif event.keysym == "Up" or event.keysym == "w":
+        tecla_arriba = True
+
+    elif event.keysym == "Down" or event.keysym == "s":
+        tecla_abajo = True
+
+    elif event.keysym == "space":
+        saltar()
+
+    elif event.keysym == "r" or event.keysym == "R":
+        reiniciar_juego()
+
+
+def tecla_soltada(event):
+    global tecla_izquierda, tecla_derecha, tecla_arriba, tecla_abajo
+
+    if event.keysym == "Left" or event.keysym == "a":
+        tecla_izquierda = False
+
+    elif event.keysym == "Right" or event.keysym == "d":
+        tecla_derecha = False
+
+    elif event.keysym == "Up" or event.keysym == "w":
+        tecla_arriba = False
+
+    elif event.keysym == "Down" or event.keysym == "s":
+        tecla_abajo = False
+
+
+# ======================================================
+# FLUJO DEL JUEGO
+# ======================================================
+
+def reiniciar_teclas():
+    global tecla_izquierda, tecla_derecha, tecla_arriba, tecla_abajo
+
+    tecla_izquierda = False
+    tecla_derecha = False
+    tecla_arriba = False
+    tecla_abajo = False
+
+
+def reiniciar_juego():
+    global juego_activo, mensaje, puntaje
+    global player_vy
+    global enemigos_x, enemigos_y, enemigos_direccion
+
+    buscar_inicio()
+
+    for i in range(len(enemigos_x)):
+        enemigos_x[i] = enemigos_inicio_x[i]
+        enemigos_y[i] = enemigos_inicio_y[i]
+        enemigos_direccion[i] = 1
+
+    player_vy = 0
+    juego_activo = True
+    puntaje = 1000
+    mensaje = "Flechas: mover/subir/bajar | Espacio: saltar | R: reiniciar"
+    reiniciar_teclas()
     dibujar_mapa()
-#--------
-#INICIO
-#--------
+
+
+def ciclo_juego():
+    global puntaje
+
+    if juego_activo == True:
+        mover_horizontal()
+        mover_vertical()
+        mover_enemigos_moviles()
+        revisar_resultado()
+
+        if puntaje > 0:
+            puntaje = puntaje - 1
+
+    dibujar_mapa()
+
+    ventana.after(20, ciclo_juego)
+
+
+# ======================================================
+# INICIO
+# ======================================================
+
 buscar_inicio()
+buscar_enemigos_moviles()
 dibujar_mapa()
 
-ventana.bind("<Key>", mover)
+ventana.bind("<KeyPress>", tecla_presionada)
+ventana.bind("<KeyRelease>", tecla_soltada)
+
+ciclo_juego()
 
 ventana.mainloop()
