@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 # ======================================================
-# JUEGO 2D DE PLATAFORMAS - MOVIMIENTO SUAVE
+# JUEGO 2D DE PLATAFORMAS
 # Sin clases, sin diccionarios, sin sets
 # Usa matriz, listas, variables globales, funciones y Tkinter
 # ======================================================
@@ -44,7 +44,7 @@ ALTO_PLAYER = 30
 ANCHO_ENEMIGO = 26
 ALTO_ENEMIGO = 26
 
-VELOCIDAD = 4
+VELOCIDAD = 6
 VELOCIDAD_ESCALERA = 3
 GRAVEDAD = 1
 FUERZA_SALTO = -13
