@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-
+import winsound
 # ======================================================
 # JUEGO 2D DE PLATAFORMAS
 # Sin clases, sin diccionarios, sin sets
@@ -76,6 +76,349 @@ puntaje = 1000
 ventana = tk.Tk()
 ventana.title("Juego 2D de Plataformas - Movimiento suave")
 
+musica_activa = False
+boton_musica_menu = None
+imagen_menu = None
+# ======================================================
+# MENU Y RANKINGS
+# ======================================================
+
+menu_principal = None
+juego_visible = False
+
+rankings_temporales = [
+    ["AAA", 2500],
+    ["BBB", 2100],
+    ["CCC", 1800],
+    ["DDD", 1500],
+    ["EEE", 1200]
+]
+
+# ======================================================
+# MENU PRINCIPAL
+# ======================================================
+
+def ocultar_juego():
+    global juego_visible
+
+    marco_superior.pack_forget()
+    canvas.pack_forget()
+    marco_editor.pack_forget()
+
+    juego_visible = False
+
+
+def mostrar_juego():
+    global juego_visible
+
+    marco_superior.pack(fill="x")
+    canvas.pack()
+
+    juego_visible = True
+
+
+def limpiar_menu():
+    global menu_principal
+
+    if menu_principal != None:
+        menu_principal.destroy()
+        menu_principal = None
+
+
+def mostrar_menu_principal():
+    global menu_principal, juego_activo, modo_editor, imagen_menu
+
+    juego_activo = False
+    modo_editor = False
+
+    ocultar_juego()
+    limpiar_menu()
+
+    menu_principal = tk.Frame(ventana, bg="black")
+    menu_principal.pack(fill="both", expand=True)
+
+    # -----------------------------
+    # Fondo del menú
+    # -----------------------------
+    ancho_menu = ANCHO
+    alto_menu = ALTO + 70
+
+    canvas_menu = tk.Canvas(
+        menu_principal,
+        width=ancho_menu,
+        height=alto_menu,
+        highlightthickness=0,
+        bd=0
+    )
+    canvas_menu.pack(fill="both", expand=True)
+
+    global boton_musica_menu
+
+    texto_musica = "🔊"
+
+    if musica_activa == False:
+        texto_musica = "🔇"
+
+    boton_musica_menu = tk.Button(
+        canvas_menu,
+        text=texto_musica,
+        font=("Arial", 16, "bold"),
+        bg="#facc15",
+        fg="black",
+        activebackground="#fde68a",
+        activeforeground="black",
+        relief="flat",
+        bd=0,
+        width=3,
+        height=1,
+        cursor="hand2",
+        command=cambiar_musica
+    )
+
+    canvas_menu.create_window(
+        ancho_menu - 45,
+        35,
+        window=boton_musica_menu
+    )
+
+    try:
+        imagen_menu = tk.PhotoImage(file="fondo.png")
+        canvas_menu.create_image(0, 0, image=imagen_menu, anchor="nw")
+    except:
+        # Si no encuentra la imagen, usa un fondo de color
+        canvas_menu.create_rectangle(
+            0, 0, ancho_menu, alto_menu,
+            fill="#0f172a",
+            outline=""
+        )
+
+    # Capa oscura encima para que se lean mejor los textos
+    canvas_menu.create_rectangle(
+        0, 0, ancho_menu, alto_menu,
+        fill="black",
+        stipple="gray50",
+        outline=""
+    )
+
+    # -----------------------------
+    # Título y subtítulo
+    # -----------------------------
+    canvas_menu.create_text(
+        ancho_menu / 2,
+        70,
+        text="JUEGO 2D DE PLATAFORMAS",
+        font=("Arial", 24, "bold"),
+        fill="#facc15"
+    )
+
+    canvas_menu.create_text(
+        ancho_menu / 2,
+        110,
+        text="Aventura, trampas, enemigos y mapas creados por ti",
+        font=("Arial", 11, "bold"),
+        fill="white"
+    )
+
+    # -----------------------------
+    # Marco de botones encima del fondo
+    # -----------------------------
+    marco_botones_menu = tk.Frame(
+        canvas_menu,
+        bg="#111827",
+        bd=3,
+        relief="ridge"
+    )
+
+    boton_jugar = tk.Button(
+        marco_botones_menu,
+        text="▶ Jugar",
+        font=("Arial", 14, "bold"),
+        bg="#22c55e",
+        fg="white",
+        activebackground="#86efac",
+        activeforeground="black",
+        relief="flat",
+        bd=0,
+        padx=25,
+        pady=10,
+        width=18,
+        cursor="hand2",
+        command=iniciar_juego_desde_menu
+    )
+    boton_jugar.pack(pady=10, padx=20)
+
+    boton_rankings = tk.Button(
+        marco_botones_menu,
+        text="🏆 Rankings",
+        font=("Arial", 14, "bold"),
+        bg="#3b82f6",
+        fg="white",
+        activebackground="#93c5fd",
+        activeforeground="black",
+        relief="flat",
+        bd=0,
+        padx=25,
+        pady=10,
+        width=18,
+        cursor="hand2",
+        command=mostrar_rankings
+    )
+    boton_rankings.pack(pady=10, padx=20)
+
+    boton_salir = tk.Button(
+        marco_botones_menu,
+        text="✖ Salir",
+        font=("Arial", 14, "bold"),
+        bg="#ef4444",
+        fg="white",
+        activebackground="#fca5a5",
+        activeforeground="black",
+        relief="flat",
+        bd=0,
+        padx=25,
+        pady=10,
+        width=18,
+        cursor="hand2",
+        command=cerrar_juego
+    )
+    boton_salir.pack(pady=10, padx=20)
+
+    # Coloca el marco de botones encima del fondo
+    canvas_menu.create_window(
+        ancho_menu / 2,
+        260,
+        window=marco_botones_menu
+    )
+
+    # Pie de texto
+    canvas_menu.create_text(
+        ancho_menu / 2,
+        alto_menu - 25,
+        text="Proyecto de plataformas | Menú principal temporal",
+        font=("Arial", 10, "bold"),
+        fill="#e5e7eb"
+    )
+
+
+def iniciar_juego_desde_menu():
+    limpiar_menu()
+    mostrar_juego()
+    ocultar_botones_editor()
+    reiniciar_juego()
+    dibujar_mapa()
+
+
+def mostrar_rankings():
+    limpiar_menu()
+
+    global menu_principal
+    menu_principal = tk.Frame(ventana, bg="#111827")
+    menu_principal.pack(fill="both", expand=True)
+
+    titulo = tk.Label(
+        menu_principal,
+        text="RANKINGS",
+        font=("Arial", 24, "bold"),
+        bg="#111827",
+        fg="#facc15"
+    )
+    titulo.pack(pady=(25, 15))
+
+    subtitulo = tk.Label(
+        menu_principal,
+        text="Top temporal de puntajes",
+        font=("Arial", 12, "bold"),
+        bg="#111827",
+        fg="white"
+    )
+    subtitulo.pack(pady=(0, 20))
+
+    marco_tabla = tk.Frame(
+        menu_principal,
+        bg="#1f2937",
+        bd=3,
+        relief="ridge"
+    )
+    marco_tabla.pack(pady=10, padx=20)
+
+    encabezado1 = tk.Label(
+        marco_tabla,
+        text="Posición",
+        font=("Arial", 12, "bold"),
+        width=12,
+        bg="#374151",
+        fg="white"
+    )
+    encabezado1.grid(row=0, column=0, padx=2, pady=2)
+
+    encabezado2 = tk.Label(
+        marco_tabla,
+        text="Jugador",
+        font=("Arial", 12, "bold"),
+        width=16,
+        bg="#374151",
+        fg="white"
+    )
+    encabezado2.grid(row=0, column=1, padx=2, pady=2)
+
+    encabezado3 = tk.Label(
+        marco_tabla,
+        text="Puntaje",
+        font=("Arial", 12, "bold"),
+        width=16,
+        bg="#374151",
+        fg="white"
+    )
+    encabezado3.grid(row=0, column=2, padx=2, pady=2)
+
+    for i in range(len(rankings_temporales)):
+        posicion = tk.Label(
+            marco_tabla,
+            text=str(i + 1),
+            font=("Arial", 11, "bold"),
+            width=12,
+            bg="#e5e7eb",
+            fg="black"
+        )
+        posicion.grid(row=i + 1, column=0, padx=2, pady=2)
+
+        jugador = tk.Label(
+            marco_tabla,
+            text=rankings_temporales[i][0],
+            font=("Arial", 11, "bold"),
+            width=16,
+            bg="#e5e7eb",
+            fg="black"
+        )
+        jugador.grid(row=i + 1, column=1, padx=2, pady=2)
+
+        puntaje_label = tk.Label(
+            marco_tabla,
+            text=str(rankings_temporales[i][1]),
+            font=("Arial", 11, "bold"),
+            width=16,
+            bg="#e5e7eb",
+            fg="black"
+        )
+        puntaje_label.grid(row=i + 1, column=2, padx=2, pady=2)
+
+    boton_volver = tk.Button(
+        menu_principal,
+        text="← Volver al menú",
+        font=("Arial", 13, "bold"),
+        bg="#2563eb",
+        fg="white",
+        activebackground="#93c5fd",
+        activeforeground="black",
+        relief="flat",
+        bd=0,
+        padx=20,
+        pady=10,
+        cursor="hand2",
+        command=mostrar_menu_principal
+    )
+    boton_volver.pack(pady=25)
+
 # ======================================================
 # BARRA DE BOTONES
 # ======================================================
@@ -104,8 +447,39 @@ boton_editar = tk.Button(
     cursor="hand2",
     command=lambda: abrir_editor()
 )
+boton_volver_menu = tk.Button(
+    marco_superior,
+    text="🏠 Menú principal",
+    font=("Arial", 11, "bold"),
+    bg="#9333ea",
+    fg="white",
+    activebackground="#c084fc",
+    activeforeground="black",
+    relief="flat",
+    bd=0,
+    padx=15,
+    pady=7,
+    cursor="hand2",
+    command=lambda: volver_al_menu_principal()
+)
+boton_volver_menu.pack(side="left", padx=8, pady=8)
 boton_editar.pack(side="left", padx=8, pady=8)
-
+boton_musica = tk.Button(
+    marco_superior,
+    text="🔊 Música ON",
+    font=("Arial", 11, "bold"),
+    bg="#16a34a",
+    fg="white",
+    activebackground="#86efac",
+    activeforeground="black",
+    relief="flat",
+    bd=0,
+    padx=15,
+    pady=7,
+    cursor="hand2",
+    command=lambda: cambiar_musica()
+)
+boton_musica.pack(side="left", padx=8, pady=8)
 etiqueta_modo = tk.Label(
     marco_superior,
     text="Modo juego",
@@ -197,7 +571,50 @@ herramienta_editor = 1
 # 5 = trampa
 # 6 = inicio
 # 7 = meta
+# ======================================================
+# MUSICA
+# ======================================================
 
+def iniciar_musica():
+    global musica_activa
+
+    try:
+        winsound.PlaySound("musica.wav", winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+        musica_activa = True
+    except:
+        print("No se pudo reproducir la música. Revisa que exista el archivo musica.wav")
+
+
+def detener_musica():
+    global musica_activa
+
+    winsound.PlaySound(None, winsound.SND_PURGE)
+    musica_activa = False
+
+
+def cambiar_musica():
+    global boton_musica_menu
+
+    if musica_activa == True:
+        detener_musica()
+
+        if boton_musica_menu != None:
+            boton_musica_menu.config(text="🔇")
+
+    else:
+        iniciar_musica()
+
+        if boton_musica_menu != None:
+            boton_musica_menu.config(text="🔊")
+def volver_al_menu_principal():
+    global juego_activo, modo_editor
+
+    juego_activo = False
+    modo_editor = False
+
+    reiniciar_teclas()
+    ocultar_botones_editor()
+    mostrar_menu_principal()
 # ======================================================
 # FUNCIONES DE BUSQUEDA
 # ======================================================
@@ -1174,18 +1591,25 @@ def dibujar_editor():
         font=("Arial", 9, "bold")
     )
 
+def cerrar_juego():
+    detener_musica()
+    ventana.destroy()
+ventana.protocol("WM_DELETE_WINDOW", cerrar_juego)
 # ======================================================
 # INICIO
 # ======================================================
 
 buscar_inicio()
 buscar_enemigos_moviles()
-dibujar_mapa()
 
 ventana.bind("<KeyPress>", tecla_presionada)
 ventana.bind("<KeyRelease>", tecla_soltada)
 
 canvas.bind("<Button-1>", click_editor)
+
+iniciar_musica()
+
+mostrar_menu_principal()
 
 ciclo_juego()
 
