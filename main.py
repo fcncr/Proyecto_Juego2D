@@ -78,6 +78,7 @@ ventana.title("Juego 2D de Plataformas - Movimiento suave")
 
 musica_activa = False
 boton_musica_menu = None
+boton_musica_juego = None
 imagen_menu = None
 # ======================================================
 # MENU Y RANKINGS
@@ -115,18 +116,21 @@ def mostrar_juego():
     canvas.pack()
 
     juego_visible = True
+    actualizar_botones_musica()
 
 
 def limpiar_menu():
-    global menu_principal
+    global menu_principal, boton_musica_menu
 
     if menu_principal != None:
         menu_principal.destroy()
         menu_principal = None
 
+    boton_musica_menu = None
+
 
 def mostrar_menu_principal():
-    global menu_principal, juego_activo, modo_editor, imagen_menu
+    global menu_principal, juego_activo, modo_editor, imagen_menu, boton_musica_menu
 
     juego_activo = False
     modo_editor = False
@@ -151,35 +155,6 @@ def mostrar_menu_principal():
         bd=0
     )
     canvas_menu.pack(fill="both", expand=True)
-
-    global boton_musica_menu
-
-    texto_musica = "🔊"
-
-    if musica_activa == False:
-        texto_musica = "🔇"
-
-    boton_musica_menu = tk.Button(
-        canvas_menu,
-        text=texto_musica,
-        font=("Arial", 16, "bold"),
-        bg="#facc15",
-        fg="black",
-        activebackground="#fde68a",
-        activeforeground="black",
-        relief="flat",
-        bd=0,
-        width=3,
-        height=1,
-        cursor="hand2",
-        command=cambiar_musica
-    )
-
-    canvas_menu.create_window(
-        ancho_menu - 45,
-        35,
-        window=boton_musica_menu
-    )
 
     try:
         imagen_menu = tk.PhotoImage(file="fondo.png")
@@ -297,6 +272,32 @@ def mostrar_menu_principal():
         text="Proyecto de plataformas | Menú principal temporal",
         font=("Arial", 10, "bold"),
         fill="#e5e7eb"
+    )
+    texto_musica = "🔊"
+
+    if musica_activa == False:
+        texto_musica = "🔇"
+
+    boton_musica_menu = tk.Button(
+        canvas_menu,
+        text=texto_musica,
+        font=("Arial", 16, "bold"),
+        bg="#facc15",
+        fg="black",
+        activebackground="#fde68a",
+        activeforeground="black",
+        relief="flat",
+        bd=0,
+        width=3,
+        height=1,
+        cursor="hand2",
+        command=lambda: cambiar_musica()
+    )
+
+    canvas_menu.create_window(
+        ancho_menu - 45,
+        35,
+        window=boton_musica_menu
     )
 
 
@@ -464,22 +465,7 @@ boton_volver_menu = tk.Button(
 )
 boton_volver_menu.pack(side="left", padx=8, pady=8)
 boton_editar.pack(side="left", padx=8, pady=8)
-boton_musica = tk.Button(
-    marco_superior,
-    text="🔊 Música ON",
-    font=("Arial", 11, "bold"),
-    bg="#16a34a",
-    fg="white",
-    activebackground="#86efac",
-    activeforeground="black",
-    relief="flat",
-    bd=0,
-    padx=15,
-    pady=7,
-    cursor="hand2",
-    command=lambda: cambiar_musica()
-)
-boton_musica.pack(side="left", padx=8, pady=8)
+
 etiqueta_modo = tk.Label(
     marco_superior,
     text="Modo juego",
@@ -488,6 +474,23 @@ etiqueta_modo = tk.Label(
     fg="white"
 )
 etiqueta_modo.pack(side="left", padx=10)
+
+boton_musica_juego = tk.Button(
+    marco_superior,
+    text="🔊",
+    font=("Arial", 16, "bold"),
+    bg="#facc15",
+    fg="black",
+    activebackground="#fde68a",
+    activeforeground="black",
+    relief="flat",
+    bd=0,
+    width=3,
+    height=1,
+    cursor="hand2",
+    command=lambda: cambiar_musica()
+)
+boton_musica_juego.pack(side="right", padx=8, pady=8)
 
 
 # Este marco NO se muestra al inicio.
@@ -591,21 +594,32 @@ def detener_musica():
     winsound.PlaySound(None, winsound.SND_PURGE)
     musica_activa = False
 
+def actualizar_botones_musica():
+    texto = "🔊"
+
+    if musica_activa == False:
+        texto = "🔇"
+
+    try:
+        if boton_musica_menu != None:
+            boton_musica_menu.config(text=texto)
+    except:
+        pass
+
+    try:
+        if boton_musica_juego != None:
+            boton_musica_juego.config(text=texto)
+    except:
+        pass
+
 
 def cambiar_musica():
-    global boton_musica_menu
-
     if musica_activa == True:
         detener_musica()
-
-        if boton_musica_menu != None:
-            boton_musica_menu.config(text="🔇")
-
     else:
         iniciar_musica()
 
-        if boton_musica_menu != None:
-            boton_musica_menu.config(text="🔊")
+    actualizar_botones_musica()
 def volver_al_menu_principal():
     global juego_activo, modo_editor
 
