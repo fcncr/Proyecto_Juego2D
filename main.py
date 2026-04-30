@@ -80,6 +80,17 @@ musica_activa = False
 boton_musica_menu = None
 boton_musica_juego = None
 imagen_menu = None
+
+# =========================
+# RANKING Y PANTALLA FINAL
+# =========================
+
+ARCHIVO_RANKING = "rankings.txt"
+
+pantalla_final_activa = False
+entrada_nombre = None
+widgets_finales = []
+puntaje_final = 0
 # ======================================================
 # MENU Y RANKINGS
 # ======================================================
@@ -87,14 +98,287 @@ imagen_menu = None
 menu_principal = None
 juego_visible = False
 
-rankings_temporales = [
-    ["AAA", 2500],
-    ["BBB", 2100],
-    ["CCC", 1800],
-    ["DDD", 1500],
-    ["EEE", 1200]
-]
+# ======================================================
+# RANKING EN ARCHIVO TXT
+# ======================================================
+# ======================================================
+# PANTALLA FINAL
+# ======================================================
 
+def limpiar_widgets_finales():
+    global widgets_finales, entrada_nombre
+
+    for i in range(len(widgets_finales)):
+        try:
+            widgets_finales[i].destroy()
+        except:
+            pass
+
+    widgets_finales = []
+    entrada_nombre = None
+
+def mostrar_pantalla_final(resultado, motivo):
+    global pantalla_final_activa, entrada_nombre, widgets_finales, puntaje_final, juego_activo
+
+    juego_activo = False
+    pantalla_final_activa = True
+    puntaje_final = puntaje
+
+    limpiar_widgets_finales()
+
+    canvas.delete("all")
+
+    canvas.create_rectangle(
+        0,
+        0,
+        ANCHO,
+        ALTO,
+        fill="#0f172a",
+        outline=""
+    )
+
+    canvas.create_rectangle(
+        80,
+        70,
+        ANCHO - 80,
+        ALTO - 70,
+        fill="#1f2937",
+        outline="#facc15",
+        width=4
+    )
+
+    color_titulo = "#22c55e"
+
+    if resultado == "PERDISTE":
+        color_titulo = "#ef4444"
+
+    canvas.create_text(
+        ANCHO / 2,
+        115,
+        text=resultado,
+        font=("Arial", 28, "bold"),
+        fill=color_titulo
+    )
+
+    canvas.create_text(
+        ANCHO / 2,
+        160,
+        text=motivo,
+        font=("Arial", 13, "bold"),
+        fill="white"
+    )
+
+    canvas.create_text(
+        ANCHO / 2,
+        200,
+        text="Puntaje final: " + str(puntaje_final),
+        font=("Arial", 15, "bold"),
+        fill="#facc15"
+    )
+
+    if resultado == "GANASTE":
+        canvas.create_text(
+            ANCHO / 2,
+            245,
+            text="Escribe tu nombre:",
+            font=("Arial", 12, "bold"),
+            fill="white"
+        )
+
+        entrada_nombre = tk.Entry(
+            ventana,
+            font=("Arial", 13, "bold"),
+            justify="center"
+        )
+        entrada_nombre.focus_set()
+
+        widgets_finales.append(entrada_nombre)
+
+        canvas.create_window(
+            ANCHO / 2,
+            275,
+            window=entrada_nombre,
+            width=220,
+            height=30
+        )
+
+        boton_guardar = tk.Button(
+            ventana,
+            text="Guardar puntaje",
+            font=("Arial", 11, "bold"),
+            bg="#22c55e",
+            fg="white",
+            activebackground="#86efac",
+            activeforeground="black",
+            relief="flat",
+            bd=0,
+            padx=15,
+            pady=7,
+            cursor="hand2",
+            command=lambda: guardar_puntaje_final(resultado)
+        )
+
+        widgets_finales.append(boton_guardar)
+
+        canvas.create_window(
+            ANCHO / 2,
+            325,
+            window=boton_guardar
+        )
+
+    else:
+        canvas.create_text(
+            ANCHO / 2,
+            260,
+            text="No se guardó puntaje porque no completaste el nivel.",
+            font=("Arial", 11, "bold"),
+            fill="#e5e7eb"
+        )
+
+    boton_reintentar = tk.Button(
+        ventana,
+        text="Reintentar",
+        font=("Arial", 11, "bold"),
+        bg="#2563eb",
+        fg="white",
+        activebackground="#93c5fd",
+        activeforeground="black",
+        relief="flat",
+        bd=0,
+        padx=15,
+        pady=7,
+        cursor="hand2",
+        command=reiniciar_juego
+    )
+
+    widgets_finales.append(boton_reintentar)
+
+    canvas.create_window(
+        ANCHO / 2 - 90,
+        380,
+        window=boton_reintentar
+    )
+
+    boton_menu = tk.Button(
+        ventana,
+        text="Menú principal",
+        font=("Arial", 11, "bold"),
+        bg="#9333ea",
+        fg="white",
+        activebackground="#c084fc",
+        activeforeground="black",
+        relief="flat",
+        bd=0,
+        padx=15,
+        pady=7,
+        cursor="hand2",
+        command=volver_al_menu_principal
+    )
+
+    widgets_finales.append(boton_menu)
+
+    canvas.create_window(
+        ANCHO / 2 + 90,
+        380,
+        window=boton_menu
+    )
+def guardar_puntaje_final(resultado):
+    nombre = ""
+
+    if entrada_nombre != None:
+        nombre = entrada_nombre.get()
+
+    if nombre == "":
+        nombre = "Jugador"
+
+    if resultado == "GANASTE":
+        agregar_puntaje_ranking(nombre, puntaje_final)
+
+        messagebox.showinfo(
+            "Puntaje guardado",
+            "El puntaje fue guardado correctamente."
+        )
+
+        limpiar_widgets_finales()
+        mostrar_rankings()
+
+    else:
+        messagebox.showinfo(
+            "Partida terminada",
+            "No se guardó puntaje porque no completaste el nivel."
+        )
+
+        limpiar_widgets_finales()
+        mostrar_menu_principal()
+def leer_rankings():
+    lista = []
+
+    try:
+        archivo = open(ARCHIVO_RANKING, "r", encoding="utf-8")
+
+        lineas = archivo.readlines()
+
+        archivo.close()
+
+        for linea in lineas:
+            linea = linea.strip()
+
+            if linea != "":
+                partes = linea.split(",")
+
+                if len(partes) == 2:
+                    nombre = partes[0]
+                    puntos = int(partes[1])
+
+                    lista.append([nombre, puntos])
+
+    except:
+        # Si el archivo no existe todavía, no pasa nada.
+        lista = []
+
+    return lista
+
+
+def ordenar_rankings(lista):
+    # Ordenamiento simple de mayor a menor.
+    for i in range(len(lista)):
+        for j in range(i + 1, len(lista)):
+            if lista[j][1] > lista[i][1]:
+                temporal = lista[i]
+                lista[i] = lista[j]
+                lista[j] = temporal
+
+    return lista
+
+
+def guardar_rankings(lista):
+    lista = ordenar_rankings(lista)
+
+    archivo = open(ARCHIVO_RANKING, "w", encoding="utf-8")
+
+    contador = 0
+
+    for i in range(len(lista)):
+        if contador < 5:
+            nombre = lista[i][0]
+            puntos = lista[i][1]
+
+            archivo.write(nombre + "," + str(puntos) + "\n")
+
+            contador = contador + 1
+
+    archivo.close()
+
+
+def agregar_puntaje_ranking(nombre, puntos):
+    if nombre == "":
+        nombre = "Jugador"
+
+    lista = leer_rankings()
+
+    lista.append([nombre, puntos])
+
+    guardar_rankings(lista)
 # ======================================================
 # MENU PRINCIPAL
 # ======================================================
@@ -311,8 +595,10 @@ def iniciar_juego_desde_menu():
 
 def mostrar_rankings():
     limpiar_menu()
+    ocultar_juego()
 
     global menu_principal
+
     menu_principal = tk.Frame(ventana, bg="#111827")
     menu_principal.pack(fill="both", expand=True)
 
@@ -327,7 +613,7 @@ def mostrar_rankings():
 
     subtitulo = tk.Label(
         menu_principal,
-        text="Top temporal de puntajes",
+        text="Top 5 de mejores puntajes",
         font=("Arial", 12, "bold"),
         bg="#111827",
         fg="white"
@@ -342,66 +628,80 @@ def mostrar_rankings():
     )
     marco_tabla.pack(pady=10, padx=20)
 
-    encabezado1 = tk.Label(
+    tk.Label(
         marco_tabla,
         text="Posición",
         font=("Arial", 12, "bold"),
         width=12,
         bg="#374151",
         fg="white"
-    )
-    encabezado1.grid(row=0, column=0, padx=2, pady=2)
+    ).grid(row=0, column=0, padx=2, pady=2)
 
-    encabezado2 = tk.Label(
+    tk.Label(
         marco_tabla,
         text="Jugador",
         font=("Arial", 12, "bold"),
         width=16,
         bg="#374151",
         fg="white"
-    )
-    encabezado2.grid(row=0, column=1, padx=2, pady=2)
+    ).grid(row=0, column=1, padx=2, pady=2)
 
-    encabezado3 = tk.Label(
+    tk.Label(
         marco_tabla,
         text="Puntaje",
         font=("Arial", 12, "bold"),
         width=16,
         bg="#374151",
         fg="white"
-    )
-    encabezado3.grid(row=0, column=2, padx=2, pady=2)
+    ).grid(row=0, column=2, padx=2, pady=2)
 
-    for i in range(len(rankings_temporales)):
-        posicion = tk.Label(
+    rankings = leer_rankings()
+    rankings = ordenar_rankings(rankings)
+
+    if len(rankings) == 0:
+        tk.Label(
             marco_tabla,
-            text=str(i + 1),
+            text="Todavía no hay puntajes guardados",
             font=("Arial", 11, "bold"),
-            width=12,
+            width=46,
             bg="#e5e7eb",
             fg="black"
-        )
-        posicion.grid(row=i + 1, column=0, padx=2, pady=2)
+        ).grid(row=1, column=0, columnspan=3, padx=2, pady=8)
 
-        jugador = tk.Label(
-            marco_tabla,
-            text=rankings_temporales[i][0],
-            font=("Arial", 11, "bold"),
-            width=16,
-            bg="#e5e7eb",
-            fg="black"
-        )
-        jugador.grid(row=i + 1, column=1, padx=2, pady=2)
+    else:
+        limite = len(rankings)
 
-        puntaje_label = tk.Label(
-            marco_tabla,
-            text=str(rankings_temporales[i][1]),
-            font=("Arial", 11, "bold"),
-            width=16,
-            bg="#e5e7eb",
-            fg="black"
-        )
-        puntaje_label.grid(row=i + 1, column=2, padx=2, pady=2)
+        if limite > 5:
+            limite = 5
+
+        for i in range(limite):
+            tk.Label(
+                marco_tabla,
+                text=str(i + 1),
+                font=("Arial", 11, "bold"),
+                width=12,
+                bg="#e5e7eb",
+                fg="black"
+            ).grid(row=i + 1, column=0, padx=2, pady=2)
+
+            tk.Label(
+                marco_tabla,
+                text=rankings[i][0],
+                font=("Arial", 11, "bold"),
+                width=16,
+                bg="#e5e7eb",
+                fg="black"
+            ).grid(row=i + 1, column=1, padx=2, pady=2)
+
+            tk.Label(
+                marco_tabla,
+                text=str(rankings[i][1]),
+                font=("Arial", 11, "bold"),
+                width=16,
+                bg="#e5e7eb",
+                fg="black"
+            ).grid(row=i + 1, column=2, padx=2, pady=2)
+
 
     boton_volver = tk.Button(
         menu_principal,
@@ -621,11 +921,13 @@ def cambiar_musica():
 
     actualizar_botones_musica()
 def volver_al_menu_principal():
-    global juego_activo, modo_editor
+    global juego_activo, modo_editor, pantalla_final_activa
 
     juego_activo = False
     modo_editor = False
+    pantalla_final_activa = False
 
+    limpiar_widgets_finales()
     reiniciar_teclas()
     ocultar_botones_editor()
     mostrar_menu_principal()
@@ -1045,30 +1347,29 @@ def jugador_toca_enemigo_movil():
 
 
 def revisar_resultado():
-    global juego_activo, mensaje
-
-    if juego_activo == False:
-        return
-
     if jugador_toca_valor(7):
-        juego_activo = False
-        mensaje = "¡Ganaste! Puntaje: " + str(puntaje)
-        return
+        mostrar_pantalla_final(
+            "GANASTE",
+            "Llegaste a la meta final."
+        )
 
-    if jugador_toca_valor(3):
-        juego_activo = False
-        mensaje = "Perdiste: tocaste enemigo rojo."
-        return
+    elif jugador_toca_valor(3):
+        mostrar_pantalla_final(
+            "PERDISTE",
+            "Tocaste un enemigo fijo."
+        )
 
-    if jugador_toca_valor(5):
-        juego_activo = False
-        mensaje = "Perdiste: tocaste una trampa."
-        return
+    elif jugador_toca_valor(5):
+        mostrar_pantalla_final(
+            "PERDISTE",
+            "Caíste en una trampa."
+        )
 
-    if jugador_toca_enemigo_movil():
-        juego_activo = False
-        mensaje = "Perdiste: tocaste enemigo morado."
-        return
+    elif jugador_toca_enemigo_movil():
+        mostrar_pantalla_final(
+            "PERDISTE",
+            "Tocaste un enemigo móvil."
+        )
 
 
 # ======================================================
@@ -1076,6 +1377,8 @@ def revisar_resultado():
 # ======================================================
 
 def tecla_presionada(event):
+    if pantalla_final_activa == True:
+        return
     global tecla_izquierda, tecla_derecha, tecla_arriba, tecla_abajo
     if modo_editor == True:
         return
@@ -1099,6 +1402,8 @@ def tecla_presionada(event):
 
 
 def tecla_soltada(event):
+    if pantalla_final_activa == True:
+        return
     global tecla_izquierda, tecla_derecha, tecla_arriba, tecla_abajo
 
     if event.keysym == "Left" or event.keysym == "a":
@@ -1131,6 +1436,9 @@ def reiniciar_juego():
     global juego_activo, mensaje, puntaje
     global player_vy
     global enemigos_x, enemigos_y, enemigos_direccion
+    global pantalla_final_activa
+    pantalla_final_activa = False
+    limpiar_widgets_finales()
 
     buscar_inicio()
 
@@ -1154,16 +1462,27 @@ def ciclo_juego():
         ventana.after(20, ciclo_juego)
         return
 
+    if pantalla_final_activa == True:
+        ventana.after(20, ciclo_juego)
+        return
+
     if juego_activo == True:
         mover_horizontal()
         mover_vertical()
         mover_enemigos_moviles()
         revisar_resultado()
 
+        # IMPORTANTE:
+        # Si revisar_resultado mostró la pantalla final,
+        # no se debe volver a dibujar el mapa encima.
+        if pantalla_final_activa == True:
+            ventana.after(20, ciclo_juego)
+            return
+
         if puntaje > 0:
             puntaje = puntaje - 1
 
-    dibujar_mapa()
+        dibujar_mapa()
 
     ventana.after(20, ciclo_juego)
 
