@@ -98,6 +98,10 @@ puntaje_final = 0
 menu_principal = None
 juego_visible = False
 
+
+
+
+
 # ======================================================
 # RANKING EN ARCHIVO TXT
 # ======================================================
@@ -470,14 +474,6 @@ def mostrar_menu_principal():
         fill="#facc15"
     )
 
-    canvas_menu.create_text(
-        ancho_menu / 2,
-        110,
-        text="Aventura, trampas, enemigos y mapas creados por ti",
-        font=("Arial", 11, "bold"),
-        fill="white"
-    )
-
     # -----------------------------
     # Marco de botones encima del fondo
     # -----------------------------
@@ -490,7 +486,7 @@ def mostrar_menu_principal():
 
     boton_jugar = tk.Button(
         marco_botones_menu,
-        text="▶ Jugar",
+        text="Jugar",
         font=("Arial", 14, "bold"),
         bg="#22c55e",
         fg="white",
@@ -508,7 +504,7 @@ def mostrar_menu_principal():
 
     boton_rankings = tk.Button(
         marco_botones_menu,
-        text="🏆 Rankings",
+        text="Rankings",
         font=("Arial", 14, "bold"),
         bg="#3b82f6",
         fg="white",
@@ -526,7 +522,7 @@ def mostrar_menu_principal():
 
     boton_salir = tk.Button(
         marco_botones_menu,
-        text="✖ Salir",
+        text="Salir",
         font=("Arial", 14, "bold"),
         bg="#ef4444",
         fg="white",
@@ -553,7 +549,7 @@ def mostrar_menu_principal():
     canvas_menu.create_text(
         ancho_menu / 2,
         alto_menu - 25,
-        text="Proyecto de plataformas | Menú principal temporal",
+        text="Proyecto Introducción a la programación | Fabián Cambronero Núñez",
         font=("Arial", 10, "bold"),
         fill="#e5e7eb"
     )
@@ -615,15 +611,6 @@ def mostrar_rankings():
         fg="#facc15"
     )
     titulo.pack(pady=(25, 15))
-
-    subtitulo = tk.Label(
-        menu_principal,
-        text="Top 5 de mejores puntajes",
-        font=("Arial", 12, "bold"),
-        bg="#111827",
-        fg="white"
-    )
-    subtitulo.pack(pady=(0, 20))
 
     marco_tabla = tk.Frame(
         menu_principal,
@@ -710,7 +697,7 @@ def mostrar_rankings():
 
     boton_volver = tk.Button(
         menu_principal,
-        text="← Volver al menú",
+        text="Volver al menú",
         font=("Arial", 13, "bold"),
         bg="#2563eb",
         fg="white",
@@ -740,7 +727,7 @@ marco_superior.pack(fill="x")
 
 boton_editar = tk.Button(
     marco_superior,
-    text="✏ Editar mapa",
+    text="Editar mapa",
     font=("Arial", 11, "bold"),
     bg=COLOR_BOTON,
     fg=COLOR_TEXTO,
@@ -755,7 +742,7 @@ boton_editar = tk.Button(
 )
 boton_volver_menu = tk.Button(
     marco_superior,
-    text="🏠 Menú principal",
+    text="Menú principal",
     font=("Arial", 11, "bold"),
     bg="#9333ea",
     fg="white",
@@ -1614,21 +1601,21 @@ def calcular_puntaje_mapa():
 
     for fila in range(FILAS):
         for col in range(COLUMNAS):
+            valor = matriz[fila][col]
 
-            if matriz[fila][col] == 3:
-                puntos = puntos + 200
-
-            elif matriz[fila][col] == 4:
-                puntos = puntos + 300
-
-            elif matriz[fila][col] == 5:
+            # Enemigos y trampas suben el puntaje porque hacen el mapa más difícil.
+            if valor == 3:
+                puntos = puntos + 100
+            elif valor == 4:
                 puntos = puntos + 150
+            elif valor == 5:
+                puntos = puntos + 120
 
-            elif matriz[fila][col] == 1:
-                puntos = puntos - 10
-
-            elif matriz[fila][col] == 2:
-                puntos = puntos - 15
+            # Bloques y escaleras bajan el puntaje porque ayudan al jugador.
+            elif valor == 1:
+                puntos = puntos - 5
+            elif valor == 2:
+                puntos = puntos - 3
 
     if puntos < 100:
         puntos = 100

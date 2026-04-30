@@ -1,5 +1,5 @@
+Fabian CN,1807
+Jugador,900
 Fabian,893
 Fabian,758
 Keyfe,740
-Caleb,739
-Justin,738
