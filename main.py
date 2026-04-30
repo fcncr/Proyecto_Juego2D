@@ -72,7 +72,7 @@ enemigos_direccion = []
 juego_activo = True
 mensaje = "Flechas: mover/subir/bajar | Espacio: saltar | R: reiniciar"
 puntaje = 1000
-
+puntaje_base_mapa = 1000
 ventana = tk.Tk()
 ventana.title("Juego 2D de Plataformas - Movimiento suave")
 
@@ -586,6 +586,11 @@ def mostrar_menu_principal():
 
 
 def iniciar_juego_desde_menu():
+    global puntaje_base_mapa
+
+    # Cuando se juega desde el menú, se calcula el valor del mapa actual.
+    puntaje_base_mapa = calcular_puntaje_mapa()
+
     limpiar_menu()
     mostrar_juego()
     ocultar_botones_editor()
@@ -922,6 +927,13 @@ def cambiar_musica():
     actualizar_botones_musica()
 def volver_al_menu_principal():
     global juego_activo, modo_editor, pantalla_final_activa
+
+    if modo_editor == True:
+        messagebox.showwarning(
+            "Editor de mapa",
+            "No puedes salir al menú mientras estás editando.\n\nPrimero debes guardar el mapa con inicio y meta."
+        )
+        return
 
     juego_activo = False
     modo_editor = False
@@ -1449,7 +1461,7 @@ def reiniciar_juego():
 
     player_vy = 0
     juego_activo = True
-    puntaje = 1000
+    puntaje = puntaje_base_mapa
     mensaje = "Flechas: mover/subir/bajar | Espacio: saltar | R: reiniciar"
     reiniciar_teclas()
     dibujar_mapa()
@@ -1524,11 +1536,13 @@ def crear_mapa_vacio():
 
 
 def abrir_editor():
-    global modo_editor, juego_activo
+    global modo_editor, juego_activo, pantalla_final_activa
 
     modo_editor = True
     juego_activo = False
+    pantalla_final_activa = False
 
+    limpiar_widgets_finales()
     reiniciar_teclas()
     crear_mapa_vacio()
     limpiar_enemigos_moviles()
@@ -1600,21 +1614,21 @@ def calcular_puntaje_mapa():
 
     for fila in range(FILAS):
         for col in range(COLUMNAS):
-            valor = matriz[fila][col]
 
-            # Enemigos y trampas suben el puntaje porque hacen el mapa más difícil.
-            if valor == 3:
-                puntos = puntos + 100
-            elif valor == 4:
+            if matriz[fila][col] == 3:
+                puntos = puntos + 200
+
+            elif matriz[fila][col] == 4:
+                puntos = puntos + 300
+
+            elif matriz[fila][col] == 5:
                 puntos = puntos + 150
-            elif valor == 5:
-                puntos = puntos + 120
 
-            # Bloques y escaleras bajan el puntaje porque ayudan al jugador.
-            elif valor == 1:
-                puntos = puntos - 5
-            elif valor == 2:
-                puntos = puntos - 3
+            elif matriz[fila][col] == 1:
+                puntos = puntos - 10
+
+            elif matriz[fila][col] == 2:
+                puntos = puntos - 15
 
     if puntos < 100:
         puntos = 100
@@ -1638,7 +1652,9 @@ def validar_mapa_editor():
 
 
 def guardar_mapa_y_jugar():
-    global modo_editor, juego_activo, puntaje
+    global modo_editor, juego_activo, puntaje, pantalla_final_activa
+    global player_vy, player_en_suelo, player_en_escalera
+    global puntaje_base_mapa
 
     if modo_editor == False:
         return
@@ -1648,14 +1664,28 @@ def guardar_mapa_y_jugar():
 
     modo_editor = False
     juego_activo = True
+    pantalla_final_activa = False
 
-    puntaje = calcular_puntaje_mapa()
+    # Guardamos cuánto vale este mapa.
+    puntaje_base_mapa = calcular_puntaje_mapa()
 
+    # El puntaje de la partida empieza con el valor del mapa.
+    puntaje = puntaje_base_mapa
+
+    player_vy = 0
+    player_en_suelo = False
+    player_en_escalera = False
+
+    limpiar_widgets_finales()
     reiniciar_teclas()
     buscar_inicio()
     buscar_enemigos_moviles()
 
     ocultar_botones_editor()
+
+    ventana.focus_set()
+    canvas.focus_set()
+
     dibujar_mapa()
 
 
