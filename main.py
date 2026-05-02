@@ -1,19 +1,23 @@
+#Proyecto de plataformas 2D
+#Fabián Cambronero Núñez 
+#Carné: 2026079420
+
+#------------------
+#Importamos Tkinter
+#------------------
 import tkinter as tk
 from tkinter import messagebox
 import winsound
-# ======================================================
-# JUEGO 2D DE PLATAFORMAS
-# Sin clases, sin diccionarios, sin sets
-# Usa matriz, listas, variables globales, funciones y Tkinter
-# ======================================================
 
+#Tamaño visual de cada cuadro en el mapa
 TAM = 40
 
+#ELEMENTOS DE LA MATRIZ 
 # 0 = vacio
-# 1 = bloque / plataforma
+# 1 = bloque
 # 2 = escalera
 # 3 = enemigo estatico
-# 4 = enemigo movil inicial
+# 4 = enemigo movil 
 # 5 = trampa
 # 6 = inicio
 # 7 = meta
@@ -35,55 +39,60 @@ matriz = [
 
 FILAS = len(matriz)
 COLUMNAS = len(matriz[0])
-ANCHO = COLUMNAS * TAM
-ALTO = FILAS * TAM
+ANCHO = COLUMNAS * TAM #Tamaño en pixeles del ancho
+ALTO = FILAS * TAM #Tamaño en pixeles del alto
 
+#Tamaño del personaje
 ANCHO_PLAYER = 24
 ALTO_PLAYER = 30
 
+#Tamaño del enemigo
 ANCHO_ENEMIGO = 26
 ALTO_ENEMIGO = 26
 
-VELOCIDAD = 6
-VELOCIDAD_ESCALERA = 3
+#Velocidades del personaje 
+VELOCIDAD = 6 #6 pixeles por ciclo
+VELOCIDAD_ESCALERA = 3 
 GRAVEDAD = 1
-FUERZA_SALTO = -13
+FUERZA_SALTO = -13 #Negativa debido que tkinter se ocupan numeros más pequeños para moverse hacia arriba en y
 MAX_CAIDA = 12
 
 VELOCIDAD_ENEMIGO = 2
 
+#Posición del jugador
 player_x = 0
 player_y = 0
-player_vy = 0
+player_vy = 0 #Velocidad vertical
 player_en_suelo = False
 player_en_escalera = False
 
+#Teclas presionadas
 tecla_izquierda = False
 tecla_derecha = False
 tecla_arriba = False
 tecla_abajo = False
 
-enemigos_x = []
-enemigos_y = []
+enemigos_x = [] #Posicion X enemigos
+enemigos_y = [] #Posición Y enemigos
 enemigos_inicio_x = []
 enemigos_inicio_y = []
 enemigos_direccion = []
 
 juego_activo = True
 mensaje = "Flechas: mover/subir/bajar | Espacio: saltar | R: reiniciar"
-puntaje = 1000
-puntaje_base_mapa = 1000
-ventana = tk.Tk()
-ventana.title("Juego 2D de Plataformas - Movimiento suave")
+puntaje = 1000 #Valor en la partida
+puntaje_base_mapa = 1000 #Variable del editor
+ventana = tk.Tk() # Creación ventana principal
+ventana.title("Juego 2D de Plataformas")
 
 musica_activa = False
 boton_musica_menu = None
 boton_musica_juego = None
-imagen_menu = None
+imagen_menu = None # Se guardará la imagen
 
-# =========================
+# ------------------------
 # RANKING Y PANTALLA FINAL
-# =========================
+# ------------------------
 
 ARCHIVO_RANKING = "rankings.txt"
 
@@ -91,24 +100,21 @@ pantalla_final_activa = False
 entrada_nombre = None
 widgets_finales = []
 puntaje_final = 0
-# ======================================================
+
+#----------------
 # MENU Y RANKINGS
-# ======================================================
+#----------------
 
 menu_principal = None
 juego_visible = False
 
-
-
-
-
-# ======================================================
-# RANKING EN ARCHIVO TXT
-# ======================================================
-# ======================================================
+# --------------
 # PANTALLA FINAL
-# ======================================================
+# --------------
 
+#Procedimiento para limpiar la pantalla final
+#Entradas: 
+#Salidas: 
 def limpiar_widgets_finales():
     global widgets_finales, entrada_nombre
 
@@ -121,6 +127,9 @@ def limpiar_widgets_finales():
     widgets_finales = []
     entrada_nombre = None
 
+#Función para mostrar la pantalla final 
+#Entradas: Resultado y que le ocurrio al jugador 
+#Salidas: Despliega la pantalla final con todos los widgets
 def mostrar_pantalla_final(resultado, motivo):
     global pantalla_final_activa, entrada_nombre, widgets_finales, puntaje_final, juego_activo
 
@@ -194,7 +203,7 @@ def mostrar_pantalla_final(resultado, motivo):
             font=("Arial", 13, "bold"),
             justify="center"
         )
-        entrada_nombre.focus_set()
+        entrada_nombre.focus_set() # Colocar curso en el cuadro de texto
 
         widgets_finales.append(entrada_nombre)
 
@@ -212,17 +221,17 @@ def mostrar_pantalla_final(resultado, motivo):
             font=("Arial", 11, "bold"),
             bg="#22c55e",
             fg="white",
-            activebackground="#86efac",
+            activebackground="#86efac", #Minetras presiona cambia color
             activeforeground="black",
             relief="flat",
             bd=0,
             padx=15,
             pady=7,
             cursor="hand2",
-            command=lambda: guardar_puntaje_final(resultado)
+            command=lambda: guardar_puntaje_final(resultado) #Lambda espera que le de click al boton para ejecutar
         )
 
-        widgets_finales.append(boton_guardar)
+        widgets_finales.append(boton_guardar) 
 
         canvas.create_window(
             ANCHO / 2,
@@ -286,6 +295,8 @@ def mostrar_pantalla_final(resultado, motivo):
         380,
         window=boton_menu
     )
+
+#---------------------------
 def guardar_puntaje_final(resultado):
     nombre = ""
 
