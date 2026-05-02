@@ -101,16 +101,8 @@ entrada_nombre = None
 widgets_finales = []
 puntaje_final = 0
 
-#----------------
-# MENU Y RANKINGS
-#----------------
-
 menu_principal = None
 juego_visible = False
-
-# --------------
-# PANTALLA FINAL
-# --------------
 
 #Procedimiento para limpiar la pantalla final
 #Entradas: 
@@ -296,7 +288,9 @@ def mostrar_pantalla_final(resultado, motivo):
         window=boton_menu
     )
 
-#---------------------------
+#Función para guardar el puntaje final obtenido
+#Entradas: Resultado (Puntaje obtenido)
+#Salidas: llama funciones para agregar el puntaje al ranking 
 def guardar_puntaje_final(resultado):
     nombre = ""
 
@@ -304,7 +298,7 @@ def guardar_puntaje_final(resultado):
         nombre = entrada_nombre.get()
 
     if nombre == "":
-        nombre = "Jugador"
+        nombre = "Jugador" #Le asigna jugador si lo dejó vació
 
     if resultado == "GANASTE":
         agregar_puntaje_ranking(nombre, puntaje_final)
@@ -325,6 +319,10 @@ def guardar_puntaje_final(resultado):
 
         limpiar_widgets_finales()
         mostrar_menu_principal()
+
+#Función para leer los rankings 
+#Entradas: 
+#Salidas: Lista con los rankings 
 def leer_rankings():
     lista = []
 
@@ -336,10 +334,10 @@ def leer_rankings():
         archivo.close()
 
         for linea in lineas:
-            linea = linea.strip()
+            linea = linea.strip() #Quita los espacios o salto de lineas.
 
             if linea != "":
-                partes = linea.split(",")
+                partes = linea.split(",") #Divide donde encuentra la ","
 
                 if len(partes) == 2:
                     nombre = partes[0]
@@ -353,9 +351,10 @@ def leer_rankings():
 
     return lista
 
-
+#Función para ordenar de mayor a menor los rankings
+#Entradas: Lista con los puntajes 
+#Salidas: Lista ordenada
 def ordenar_rankings(lista):
-    # Ordenamiento simple de mayor a menor.
     for i in range(len(lista)):
         for j in range(i + 1, len(lista)):
             if lista[j][1] > lista[i][1]:
@@ -365,7 +364,9 @@ def ordenar_rankings(lista):
 
     return lista
 
-
+#Función para guardar los rankings 
+#Entradas: Lista con rankings ordenados
+#Salidas:
 def guardar_rankings(lista):
     lista = ordenar_rankings(lista)
 
@@ -374,7 +375,7 @@ def guardar_rankings(lista):
     contador = 0
 
     for i in range(len(lista)):
-        if contador < 5:
+        if contador < 5: #Coloca los primeros 5
             nombre = lista[i][0]
             puntos = lista[i][1]
 
@@ -384,7 +385,7 @@ def guardar_rankings(lista):
 
     archivo.close()
 
-
+#Agregar puntaje al ranking
 def agregar_puntaje_ranking(nombre, puntos):
     if nombre == "":
         nombre = "Jugador"
@@ -394,10 +395,12 @@ def agregar_puntaje_ranking(nombre, puntos):
     lista.append([nombre, puntos])
 
     guardar_rankings(lista)
+
 # ======================================================
 # MENU PRINCIPAL
 # ======================================================
 
+#Procedimiento para ocultar el juego
 def ocultar_juego():
     global juego_visible
 
@@ -407,7 +410,7 @@ def ocultar_juego():
 
     juego_visible = False
 
-
+#Procedimiento para mostrar el juego
 def mostrar_juego():
     global juego_visible
 
@@ -417,7 +420,7 @@ def mostrar_juego():
     juego_visible = True
     actualizar_botones_musica()
 
-
+#Procedimiento para limpiar el menú
 def limpiar_menu():
     global menu_principal, boton_musica_menu
 
@@ -427,7 +430,7 @@ def limpiar_menu():
 
     boton_musica_menu = None
 
-
+#Procedimiento crear menú principal
 def mostrar_menu_principal():
     global menu_principal, juego_activo, modo_editor, imagen_menu, boton_musica_menu
 
@@ -470,13 +473,13 @@ def mostrar_menu_principal():
     canvas_menu.create_rectangle(
         0, 0, ancho_menu, alto_menu,
         fill="black",
-        stipple="gray50",
+        stipple="gray25",
         outline=""
     )
 
-    # -----------------------------
+    # ------------------
     # Título y subtítulo
-    # -----------------------------
+    # ------------------
     canvas_menu.create_text(
         ancho_menu / 2,
         70,
@@ -485,9 +488,9 @@ def mostrar_menu_principal():
         fill="#facc15"
     )
 
-    # -----------------------------
+    # ----------------------------------
     # Marco de botones encima del fondo
-    # -----------------------------
+    # ----------------------------------
     marco_botones_menu = tk.Frame(
         canvas_menu,
         bg="#111827",
@@ -591,7 +594,7 @@ def mostrar_menu_principal():
         window=boton_musica_menu
     )
 
-
+#Procedimiento para inicializar el juego
 def iniciar_juego_desde_menu():
     global puntaje_base_mapa
 
@@ -604,7 +607,7 @@ def iniciar_juego_desde_menu():
     reiniciar_juego()
     dibujar_mapa()
 
-
+#Procedimiento para la pantalla de rankings
 def mostrar_rankings():
     limpiar_menu()
     ocultar_juego()
@@ -677,10 +680,10 @@ def mostrar_rankings():
         if limite > 5:
             limite = 5
 
-        for i in range(limite):
+        for i in range(limite): #Coloco los players
             tk.Label(
                 marco_tabla,
-                text=str(i + 1),
+                text=str(i + 1), #Posicion
                 font=("Arial", 11, "bold"),
                 width=12,
                 bg="#e5e7eb",
@@ -689,7 +692,7 @@ def mostrar_rankings():
 
             tk.Label(
                 marco_tabla,
-                text=rankings[i][0],
+                text=rankings[i][0], #Nombre
                 font=("Arial", 11, "bold"),
                 width=16,
                 bg="#e5e7eb",
@@ -698,7 +701,7 @@ def mostrar_rankings():
 
             tk.Label(
                 marco_tabla,
-                text=str(rankings[i][1]),
+                text=str(rankings[i][1]), # Puntaje
                 font=("Arial", 11, "bold"),
                 width=16,
                 bg="#e5e7eb",
@@ -796,7 +799,7 @@ boton_musica_juego = tk.Button(
 boton_musica_juego.pack(side="right", padx=8, pady=8)
 
 
-# Este marco NO se muestra al inicio.
+# Este marco no se muestra al inicio.
 # Solo aparece cuando se presiona "Editar mapa".
 marco_editor = tk.Frame(ventana, bg="#111827")
 
@@ -807,7 +810,9 @@ fila_editor_1.pack(pady=4)
 fila_editor_2 = tk.Frame(marco_editor, bg="#111827")
 fila_editor_2.pack(pady=4)
 
-
+#Funcion para crear los botones de las herramientas del editor
+#Entradas: Los parametros del boton como el texto, su valor, el color
+#Salidas: retorna el boton que necesitamos
 def crear_boton_herramienta(marco, texto, valor, color):
     boton = tk.Button(
         marco,
@@ -837,7 +842,7 @@ boton_meta = crear_boton_herramienta(fila_editor_1, "Meta", 7, "#ca8a04")
 
 boton_enemigo_fijo = crear_boton_herramienta(fila_editor_2, "Enemigo fijo", 3, "#dc2626")
 boton_enemigo_movil = crear_boton_herramienta(fila_editor_2, "Enemigo móvil", 4, "#7c3aed")
-boton_trampa = crear_boton_herramienta(fila_editor_2, "Trampa", 5, "#111827")
+boton_trampa = crear_boton_herramienta(fila_editor_2, "Trampa", 5, "#4B0A07")
 
 boton_guardar = tk.Button(
     fila_editor_2,
@@ -869,18 +874,10 @@ canvas.pack()
 modo_editor = False
 herramienta_editor = 1
 
-# 0 = borrar / vacío
-# 1 = bloque
-# 2 = escalera
-# 3 = enemigo fijo
-# 4 = enemigo móvil
-# 5 = trampa
-# 6 = inicio
-# 7 = meta
 # ======================================================
 # MUSICA
 # ======================================================
-
+#Procedimiento para inicializar la musica 
 def iniciar_musica():
     global musica_activa
 
@@ -890,13 +887,14 @@ def iniciar_musica():
     except:
         print("No se pudo reproducir la música. Revisa que exista el archivo musica.wav")
 
-
+#Procedimieto para detener la música
 def detener_musica():
     global musica_activa
 
     winsound.PlaySound(None, winsound.SND_PURGE)
     musica_activa = False
 
+#Procedimiento para actualizar los botones de la musica
 def actualizar_botones_musica():
     texto = "🔊"
 
@@ -915,7 +913,7 @@ def actualizar_botones_musica():
     except:
         pass
 
-
+#Procedimiento para llamar a las funciones de iniciar musica o detener
 def cambiar_musica():
     if musica_activa == True:
         detener_musica()
@@ -923,10 +921,14 @@ def cambiar_musica():
         iniciar_musica()
 
     actualizar_botones_musica()
+
+#--------------------------------------------
+# Procedimiento para volver al menu principal
+#--------------------------------------------
 def volver_al_menu_principal():
     global juego_activo, modo_editor, pantalla_final_activa
 
-    if modo_editor == True:
+    if modo_editor == True: # Si esta en editor no lo deja salir
         messagebox.showwarning(
             "Editor de mapa",
             "No puedes salir al menú mientras estás editando.\n\nPrimero debes guardar el mapa con inicio y meta."
@@ -936,15 +938,17 @@ def volver_al_menu_principal():
     juego_activo = False
     modo_editor = False
     pantalla_final_activa = False
-
+    #Limpiamos
     limpiar_widgets_finales()
     reiniciar_teclas()
     ocultar_botones_editor()
     mostrar_menu_principal()
+
 # ======================================================
 # FUNCIONES DE BUSQUEDA
 # ======================================================
 
+#Procedimiento para buscar donde esta el personaje 
 def buscar_inicio():
     global player_x, player_y, player_vy
     global player_en_suelo, player_en_escalera
@@ -952,13 +956,13 @@ def buscar_inicio():
     for fila in range(FILAS):
         for col in range(COLUMNAS):
             if matriz[fila][col] == 6:
-                player_x = col * TAM + (TAM - ANCHO_PLAYER) / 2
-                player_y = fila * TAM + (TAM - ALTO_PLAYER)
-                player_vy = 0
+                player_x = col * TAM + (TAM - ANCHO_PLAYER) / 2 # Colocar jugador en x
+                player_y = fila * TAM + (TAM - ALTO_PLAYER) #Coloca en y pegado al piso
+                player_vy = 0 #Reinicia velocidad
                 player_en_suelo = False
                 player_en_escalera = False
 
-
+#Procedimiento para buscar a los enemigos moviles
 def buscar_enemigos_moviles():
     global enemigos_x, enemigos_y
     global enemigos_inicio_x, enemigos_inicio_y
@@ -986,7 +990,9 @@ def buscar_enemigos_moviles():
 # ======================================================
 # VALIDACIONES DEL MAPA
 # ======================================================
-
+#Función para revisar si una coordenada se encuentra en el mapa
+#Entradas: Fila y col a revisar 
+#Salidas: un booleano de True o False si la casilla existe o no
 def dentro_del_mapa(fila, col):
     if fila < 0 or fila >= FILAS:
         return False
@@ -996,35 +1002,45 @@ def dentro_del_mapa(fila, col):
 
     return True
 
-
+#Función para revisar que hay en una celda en especifico en la matriz
+#Entradas: fila y col de la coordenada a revisar
+#Salidas: Valor de la posicion en la matriz
 def obtener_celda(fila, col):
     if dentro_del_mapa(fila, col) == False:
         return 1
 
     return matriz[fila][col]
 
-
+#Función para revisar si en una posición hay un bloque
+#Entradas. Fila y col de la posición a revisar
+#Salidas: un booleano si es bloque o no
 def es_bloque(fila, col):
     if obtener_celda(fila, col) == 1:
         return True
 
     return False
 
-
+#Función para revisar si en una posición hay una escalera
+#Entradas. Fila y col de la posición a revisar
+#Salidas: un booleano si es escalera o no
 def es_escalera(fila, col):
     if obtener_celda(fila, col) == 2:
         return True
 
     return False
 
-
+#Revisa si dos rectangulos se estan chocando
+#Entradas: possicion y ancho de los rectangulos
+#Salidas: un booelano si se estan tocando 
 def rectangulos_chocan(x1, y1, ancho1, alto1, x2, y2, ancho2, alto2):
     if x1 < x2 + ancho2 and x1 + ancho1 > x2 and y1 < y2 + alto2 and y1 + alto1 > y2:
         return True
 
     return False
 
-
+#Función para saber si un rectangulo toca el bloque o se sale del mapa
+#Entradas: Posicion y ancho y alto
+#Salidas. un booleano si el rectangulo puede estar en la casilla
 def rectangulo_toca_bloque(x, y, ancho, alto):
     if x < 0:
         return True
@@ -1050,7 +1066,9 @@ def rectangulo_toca_bloque(x, y, ancho, alto):
 
     return False
 
-
+#Determina si un jugdor se encuentra en la escalera 
+#Entradas: possicion del jugado en x y y
+#Salidas: un booleano si se encuentra en una escalera 
 def jugador_sobre_escalera():
     centro_x = player_x + ANCHO_PLAYER / 2
     centro_y = player_y + ALTO_PLAYER / 2
@@ -1062,7 +1080,6 @@ def jugador_sobre_escalera():
         return True
 
     return False
-
 
 # ======================================================
 # DIBUJO
