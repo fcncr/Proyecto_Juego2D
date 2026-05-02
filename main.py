@@ -1085,6 +1085,7 @@ def jugador_sobre_escalera():
 # DIBUJO
 # ======================================================
 
+#Procedimiento para dibujar el mapa de juego
 def dibujar_mapa():
     canvas.delete("all")
 
@@ -1100,23 +1101,23 @@ def dibujar_mapa():
             if valor == 0:
                 canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
 
-            elif valor == 1:
+            elif valor == 1: #Bloques
                 canvas.create_rectangle(x1, y1, x2, y2, fill="#6b4f2a", outline="black")
-                canvas.create_rectangle(x1, y1, x2, y1 + 8, fill="#8b6f3d", outline="")
+                canvas.create_rectangle(x1, y1, x2, y1 + 8, fill="#8b6f3d", outline="") #Franja superior
 
-            elif valor == 2:
+            elif valor == 2: #Escaleras
                 canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
-                canvas.create_rectangle(x1 + 10, y1, x1 + 14, y2, fill="#8b5a2b", outline="")
+                canvas.create_rectangle(x1 + 10, y1, x1 + 14, y2, fill="#8b5a2b", outline="")#Verticales
                 canvas.create_rectangle(x2 - 14, y1, x2 - 10, y2, fill="#8b5a2b", outline="")
-                canvas.create_line(x1 + 10, y1 + 10, x2 - 10, y1 + 10, width=3, fill="#8b5a2b")
+                canvas.create_line(x1 + 10, y1 + 10, x2 - 10, y1 + 10, width=3, fill="#8b5a2b")#Horizontales
                 canvas.create_line(x1 + 10, y1 + 22, x2 - 10, y1 + 22, width=3, fill="#8b5a2b")
                 canvas.create_line(x1 + 10, y1 + 34, x2 - 10, y1 + 34, width=3, fill="#8b5a2b")
 
-            elif valor == 3:
+            elif valor == 3: #Enemigo rojo
                 canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
                 canvas.create_rectangle(x1 + 7, y1 + 7, x2 - 7, y2 - 7, fill="red", outline="black", width=2)
                 canvas.create_text(x1 + TAM / 2, y1 + TAM / 2, text="X", fill="white", font=("Arial", 13, "bold"))
-            elif valor == 4:
+            elif valor == 4: #Casilla movil
                 canvas.create_rectangle(
                     x1,
                     y1,
@@ -1125,16 +1126,16 @@ def dibujar_mapa():
                     fill="#87ceeb",
                     outline="#9bd3f0"
     )
-            elif valor == 5:
-                canvas.create_rectangle(x1, y1, x2, y2, fill="#222222", outline="black")
-                canvas.create_polygon(x1 + 5, y2 - 5, x1 + 15, y1 + 8, x1 + 25, y2 - 5, fill="red", outline="black")
-                canvas.create_polygon(x1 + 18, y2 - 5, x1 + 28, y1 + 8, x1 + 38, y2 - 5, fill="red", outline="black")
+            elif valor == 5: #Trampa
+                canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
+                canvas.create_polygon(x1 + 5, y2, x1 + 15, y1 + 8, x1 + 25, y2, fill="red", outline="black")
+                canvas.create_polygon(x1 + 18, y2, x1 + 28, y1 + 8, x1 + 38, y2, fill="red", outline="black")
 
-            elif valor == 6:
+            elif valor == 6: #Inicio
                 canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
                 canvas.create_text(x1 + TAM / 2, y1 + TAM / 2, text="INICIO", fill="blue", font=("Arial", 7, "bold"))
 
-            elif valor == 7:
+            elif valor == 7: #Meta
                 canvas.create_rectangle(x1, y1, x2, y2, fill="#87ceeb", outline="#9bd3f0")
                 canvas.create_rectangle(x1 + 12, y1 + 5, x1 + 16, y2 - 5, fill="black", outline="")
                 canvas.create_polygon(x1 + 16, y1 + 5, x2 - 4, y1 + 14, x1 + 16, y1 + 23, fill="gold", outline="black")
@@ -1144,7 +1145,7 @@ def dibujar_mapa():
     dibujar_player()
     dibujar_mensaje()
 
-
+#Procedimiento para dibujar al jugador
 def dibujar_player():
     canvas.create_oval(
         player_x,
@@ -1164,7 +1165,7 @@ def dibujar_player():
         font=("Arial", 14, "bold")
     )
 
-
+#Procedimiento para dibujar a los enemigos móviles 
 def dibujar_enemigos_moviles():
     for i in range(len(enemigos_x)):
         x = enemigos_x[i]
@@ -1207,17 +1208,17 @@ def dibujar_mensaje():
         fill="black",
         font=("Arial", 10, "bold")
     )
-
+"""
     if juego_activo == False:
         canvas.create_rectangle(100, 160, 540, 300, fill="white", outline="black", width=3)
         canvas.create_text(320, 210, text=mensaje, fill="black", font=("Arial", 17, "bold"))
-        canvas.create_text(320, 250, text="Presiona R para reiniciar", fill="black", font=("Arial", 12, "bold"))
+        canvas.create_text(320, 250, text="Presiona R para reiniciar", fill="black", font=("Arial", 12, "bold"))"""
 
 
-# ======================================================
+# ----------------------
 # MOVIMIENTO DEL JUGADOR
-# ======================================================
-
+# ----------------------
+#Procedimiento para poder mover el jugador horizontalmente
 def mover_horizontal():
     global player_x
 
@@ -1230,7 +1231,7 @@ def mover_horizontal():
         movimiento = movimiento + VELOCIDAD
 
     player_x = player_x + movimiento
-
+    #Ajustar movimiento cuando choca contra un bloque
     if rectangulo_toca_bloque(player_x, player_y, ANCHO_PLAYER, ALTO_PLAYER):
         if movimiento > 0:
             while rectangulo_toca_bloque(player_x, player_y, ANCHO_PLAYER, ALTO_PLAYER):
@@ -1240,7 +1241,7 @@ def mover_horizontal():
             while rectangulo_toca_bloque(player_x, player_y, ANCHO_PLAYER, ALTO_PLAYER):
                 player_x = player_x + 1
 
-
+#Procedimiento para moverse verticalmente
 def mover_vertical():
     global player_y, player_vy, player_en_suelo, player_en_escalera
 
@@ -1278,7 +1279,7 @@ def mover_vertical():
 
         player_vy = 0
 
-
+#Procedimiento para saltar
 def saltar():
     global player_vy, player_en_suelo
 
@@ -1286,14 +1287,17 @@ def saltar():
         return
 
     if player_en_suelo == True:
-        player_vy = FUERZA_SALTO
+        player_vy = FUERZA_SALTO #Sube
         player_en_suelo = False
 
 
-# ======================================================
+# --------------
 # ENEMIGO MOVIL
-# ======================================================
+# --------------
 
+#Función para determinar si puedo mover al enemigo
+#Entradas: nueva_x y la posicion del enemigo en y
+#Salidas: Un booleano
 def enemigo_puede_moverse(nuevo_x, enemigo_y):
     if nuevo_x < 0:
         return False
@@ -1317,23 +1321,24 @@ def enemigo_puede_moverse(nuevo_x, enemigo_y):
 
     return False
 
-
+#Procedimiento para poder mover a los enemigos móviles
 def mover_enemigos_moviles():
     global enemigos_x, enemigos_direccion
 
     for i in range(len(enemigos_x)):
-        nuevo_x = enemigos_x[i] + enemigos_direccion[i] * VELOCIDAD_ENEMIGO
+        nuevo_x = enemigos_x[i] + enemigos_direccion[i] * VELOCIDAD_ENEMIGO #Donde se moverá
 
         if enemigo_puede_moverse(nuevo_x, enemigos_y[i]):
             enemigos_x[i] = nuevo_x
         else:
             enemigos_direccion[i] = enemigos_direccion[i] * -1
 
-
-# ======================================================
+# ----------
 # RESULTADOS
-# ======================================================
-
+# ----------
+#Función para saber dodne esta la casilla y si se choca con los rectangulos
+#Entradas: valor a buscar
+#Salida: Un booleano
 def jugador_toca_valor(valor_buscado):
     for fila in range(FILAS):
         for col in range(COLUMNAS):
@@ -1355,7 +1360,9 @@ def jugador_toca_valor(valor_buscado):
 
     return False
 
-
+#Función para verificar si el jugador toca un enemigo movil 
+#Entradas: 
+#Salidas: Un booleano si toca al enemigo móvil
 def jugador_toca_enemigo_movil():
     for i in range(len(enemigos_x)):
         if rectangulos_chocan(
@@ -1372,7 +1379,7 @@ def jugador_toca_enemigo_movil():
 
     return False
 
-
+#Procedimiento para revisar si el jugador toca algun valor en especifico
 def revisar_resultado():
     if jugador_toca_valor(7):
         mostrar_pantalla_final(
@@ -1399,10 +1406,13 @@ def revisar_resultado():
         )
 
 
-# ======================================================
+# --------
 # TECLADO
-# ======================================================
+# --------
 
+#Eventos por las teclas presionadas
+#Entrada: event
+#Salida Booleanos
 def tecla_presionada(event):
     if pantalla_final_activa == True:
         return
@@ -1427,7 +1437,9 @@ def tecla_presionada(event):
     elif event.keysym == "r" or event.keysym == "R":
         reiniciar_juego()
 
-
+#Eventos para cuando me sueltan las teclas
+#Entradas: event
+#Salidas un booleano
 def tecla_soltada(event):
     if pantalla_final_activa == True:
         return
@@ -1446,10 +1458,10 @@ def tecla_soltada(event):
         tecla_abajo = False
 
 
-# ======================================================
+# ----------------
 # FLUJO DEL JUEGO
-# ======================================================
-
+# ----------------
+#Reiniciar las teclas
 def reiniciar_teclas():
     global tecla_izquierda, tecla_derecha, tecla_arriba, tecla_abajo
 
@@ -1458,7 +1470,7 @@ def reiniciar_teclas():
     tecla_arriba = False
     tecla_abajo = False
 
-
+#Procedimiento para reiniciar el juego
 def reiniciar_juego():
     global juego_activo, mensaje, puntaje
     global player_vy
@@ -1481,7 +1493,7 @@ def reiniciar_juego():
     reiniciar_teclas()
     dibujar_mapa()
 
-
+#Procedimiento corazón del juego para verificar cada 20 milisegundos el estado
 def ciclo_juego():
     global puntaje
 
@@ -1511,12 +1523,14 @@ def ciclo_juego():
 
         dibujar_mapa()
 
-    ventana.after(20, ciclo_juego)
+    ventana.after(20, ciclo_juego) # Revisar todo cada 20 milisegundos
 
-# ======================================================
+# ----------------
 # EDITOR DE MAPAS
-# ======================================================
-
+# ----------------
+#Función para seleccionar la herramienta correcta
+#Entrada: el valor del elemento que deseamos colcoar
+#Salida: 
 def seleccionar_herramienta(valor):
     global herramienta_editor
 
@@ -1968,6 +1982,7 @@ def dibujar_editor():
         fill="black",
         font=("Arial", 9, "bold")
     )
+
 
 def cerrar_juego():
     detener_musica()
