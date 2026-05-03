@@ -1291,15 +1291,28 @@ def saltar():
 #Función para determinar si puedo mover al enemigo
 #Entradas: nueva_x y la posicion del enemigo en y
 #Salidas: Un booleano
-def enemigo_puede_moverse(nuevo_x, enemigo_y):
-    if nuevo_x < 0:
+def enemigo_puede_moverse(x, y):
+    if rectangulo_toca_bloque(x, y, ANCHO_ENEMIGO, ALTO_ENEMIGO):
         return False
 
-    if nuevo_x + ANCHO_ENEMIGO > ANCHO:
-        return False
+    # Revisar si toca enemigos estáticos o trampas
+    col_izq = int(x // TAM)
+    col_der = int((x + ANCHO_ENEMIGO - 1) // TAM)
+    fila_arriba = int(y // TAM)
+    fila_abajo_enemigo = int((y + ALTO_ENEMIGO - 1) // TAM)
 
-    # No puede atravesar bloques
-    if rectangulo_toca_bloque(nuevo_x, enemigo_y, ANCHO_ENEMIGO, ALTO_ENEMIGO):
+    for fila in range(fila_arriba, fila_abajo_enemigo + 1):
+        for col in range(col_izq, col_der + 1):
+            valor = obtener_celda(fila, col)
+
+            if valor == 3 or valor == 5:
+                return False
+
+    # Revisar si hay piso debajo del enemigo
+    fila_abajo = int((y + ALTO_ENEMIGO + 1) // TAM)
+    col_centro = int((x + ANCHO_ENEMIGO / 2) // TAM)
+
+    if es_bloque(fila_abajo, col_centro) == False:
         return False
 
     return True
@@ -1659,6 +1672,24 @@ def validar_mapa_editor():
     if cantidad_meta == 0:
         messagebox.showwarning("Mapa incompleto", "Debes colocar una meta final.")
         return False
+    
+    for fila in range(FILAS):
+        for col in range(COLUMNAS):
+            if matriz[fila][col] == 4:
+
+                if fila + 1 >= FILAS:
+                    messagebox.showwarning(
+                        "Mapa inválido",
+                        "Un enemigo móvil no puede estar en la última fila."
+                    )
+                    return False
+
+                if matriz[fila + 1][col] != 1:
+                    messagebox.showwarning(
+                        "Mapa inválido",
+                        "Los enemigos móviles deben tener una plataforma debajo."
+                    )
+                    return False
     return True
 
 #Procedimiento para guardar el mapa y poder jugarlo
