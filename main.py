@@ -1302,17 +1302,7 @@ def enemigo_puede_moverse(nuevo_x, enemigo_y):
     if rectangulo_toca_bloque(nuevo_x, enemigo_y, ANCHO_ENEMIGO, ALTO_ENEMIGO):
         return False
 
-    # Revisa si hay piso debajo del enemigo
-    centro_x = nuevo_x + ANCHO_ENEMIGO / 2
-    abajo_y = enemigo_y + ALTO_ENEMIGO + 1
-
-    col = int(centro_x // TAM)
-    fila = int(abajo_y // TAM)
-
-    if es_bloque(fila, col):
-        return True
-
-    return False
+    return True
 
 #Procedimiento para poder mover a los enemigos móviles
 def mover_enemigos_moviles():
