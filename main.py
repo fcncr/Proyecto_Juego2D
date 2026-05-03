@@ -33,7 +33,7 @@ matriz = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 5, 2],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 1, 2],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0],
-    [6, 0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 2, 0, 4, 0, 0],
+    [6, 0, 0, 5, 5, 0, 0, 5, 0, 0, 0, 2, 0, 4, 0, 0],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
 
@@ -947,7 +947,6 @@ def volver_al_menu_principal():
 # ======================================================
 # FUNCIONES DE BUSQUEDA
 # ======================================================
-
 #Procedimiento para buscar donde esta el personaje 
 def buscar_inicio():
     global player_x, player_y, player_vy
@@ -999,7 +998,6 @@ def dentro_del_mapa(fila, col):
 
     if col < 0 or col >= COLUMNAS:
         return False
-
     return True
 
 #Función para revisar que hay en una celda en especifico en la matriz
@@ -1008,7 +1006,6 @@ def dentro_del_mapa(fila, col):
 def obtener_celda(fila, col):
     if dentro_del_mapa(fila, col) == False:
         return 1
-
     return matriz[fila][col]
 
 #Función para revisar si en una posición hay un bloque
@@ -1017,7 +1014,6 @@ def obtener_celda(fila, col):
 def es_bloque(fila, col):
     if obtener_celda(fila, col) == 1:
         return True
-
     return False
 
 #Función para revisar si en una posición hay una escalera
@@ -1026,7 +1022,6 @@ def es_bloque(fila, col):
 def es_escalera(fila, col):
     if obtener_celda(fila, col) == 2:
         return True
-
     return False
 
 #Revisa si dos rectangulos se estan chocando
@@ -1035,7 +1030,6 @@ def es_escalera(fila, col):
 def rectangulos_chocan(x1, y1, ancho1, alto1, x2, y2, ancho2, alto2):
     if x1 < x2 + ancho2 and x1 + ancho1 > x2 and y1 < y2 + alto2 and y1 + alto1 > y2:
         return True
-
     return False
 
 #Función para saber si un rectangulo toca el bloque o se sale del mapa
@@ -1084,7 +1078,6 @@ def jugador_sobre_escalera():
 # ======================================================
 # DIBUJO
 # ======================================================
-
 #Procedimiento para dibujar el mapa de juego
 def dibujar_mapa():
     canvas.delete("all")
@@ -1464,7 +1457,6 @@ def tecla_soltada(event):
 #Reiniciar las teclas
 def reiniciar_teclas():
     global tecla_izquierda, tecla_derecha, tecla_arriba, tecla_abajo
-
     tecla_izquierda = False
     tecla_derecha = False
     tecla_arriba = False
@@ -1543,7 +1535,7 @@ def seleccionar_herramienta(valor):
     if modo_editor == True:
         dibujar_editor()
 
-
+#Creamos un mapa vacio
 def crear_mapa_vacio():
     global matriz
 
@@ -1563,7 +1555,7 @@ def crear_mapa_vacio():
 
     matriz = nueva_matriz
 
-
+#Procedimiento para abrir el editor
 def abrir_editor():
     global modo_editor, juego_activo, pantalla_final_activa
 
@@ -1579,7 +1571,7 @@ def abrir_editor():
     mostrar_botones_editor()
     dibujar_editor()
 
-
+#Procedimiento para limpiar listas de enemigos 
 def limpiar_enemigos_moviles():
     global enemigos_x, enemigos_y
     global enemigos_inicio_x, enemigos_inicio_y
@@ -1591,14 +1583,18 @@ def limpiar_enemigos_moviles():
     enemigos_inicio_y = []
     enemigos_direccion = []
 
-
+#Función para limpiar un valor en especifico 
+#Entradas: El valor del elemento que deseamos eliminar
+#Salidas: Elimina el elemento de la matriz 
 def limpiar_valor_unico(valor):
     for fila in range(FILAS):
         for col in range(COLUMNAS):
             if matriz[fila][col] == valor:
                 matriz[fila][col] = 0
 
-
+#Función para darle click a la casilla en el editor
+#Entrada: un evento del mouse
+#Salida: Se modifica la matriz
 def click_editor(event):
     global matriz
 
@@ -1623,10 +1619,11 @@ def click_editor(event):
         limpiar_valor_unico(7)
 
     matriz[fila][col] = herramienta_editor
-
     dibujar_editor()
 
-
+#Cuenta cuantas cosas hay en la matriz dependiendo de el valor 
+#Entradas: valor del elemento a buscar
+#Salida: la cantidad de veces que se encontro el elemento
 def contar_valor(valor):
     cantidad = 0
 
@@ -1637,14 +1634,13 @@ def contar_valor(valor):
 
     return cantidad
 
-
+#Calcula el puntaje dependiendo de los objetos que digitaron en el mapa
 def calcular_puntaje_mapa():
     puntos = 1000
 
     for fila in range(FILAS):
         for col in range(COLUMNAS):
             valor = matriz[fila][col]
-
             # Enemigos y trampas suben el puntaje porque hacen el mapa más difícil.
             if valor == 3:
                 puntos = puntos + 100
@@ -1658,13 +1654,11 @@ def calcular_puntaje_mapa():
                 puntos = puntos - 5
             elif valor == 2:
                 puntos = puntos - 3
-
     if puntos < 100:
         puntos = 100
-
     return puntos
 
-
+#Valida que el mapa editor se encuentre con los elementos minimos para poder jugar
 def validar_mapa_editor():
     cantidad_inicio = contar_valor(6)
     cantidad_meta = contar_valor(7)
@@ -1672,14 +1666,12 @@ def validar_mapa_editor():
     if cantidad_inicio == 0:
         messagebox.showwarning("Mapa incompleto", "Debes colocar un punto de inicio.")
         return False
-
     if cantidad_meta == 0:
         messagebox.showwarning("Mapa incompleto", "Debes colocar una meta final.")
         return False
-
     return True
 
-
+#Procedimiento para guardar el mapa y poder jugarlo
 def guardar_mapa_y_jugar():
     global modo_editor, juego_activo, puntaje, pantalla_final_activa
     global player_vy, player_en_suelo, player_en_escalera
@@ -1717,7 +1709,7 @@ def guardar_mapa_y_jugar():
 
     dibujar_mapa()
 
-
+#Valor de cada herramienta del editor 
 def nombre_herramienta():
     if herramienta_editor == 0:
         return "Borrar"
@@ -1726,9 +1718,9 @@ def nombre_herramienta():
     elif herramienta_editor == 2:
         return "Escalera"
     elif herramienta_editor == 3:
-        return "Enemigo fijo"
+        return "Enemigo"
     elif herramienta_editor == 4:
-        return "Enemigo móvil"
+        return "Enemigo"
     elif herramienta_editor == 5:
         return "Trampa"
     elif herramienta_editor == 6:
@@ -1738,15 +1730,17 @@ def nombre_herramienta():
 
     return "Desconocido"
 
+#Mostrar el marco del editor y la etiqueta de editor
 def mostrar_botones_editor():
     marco_editor.pack(fill="x")
     etiqueta_modo.config(text="Modo editor")
 
-
+#Ocultar el marco y pone la etiqueta en modo juego
 def ocultar_botones_editor():
     marco_editor.pack_forget()
     etiqueta_modo.config(text="Modo juego")
 
+#Procedimiento para dibujar la interfaz del editor
 def dibujar_editor():
     canvas.delete("all")
 
@@ -1885,8 +1879,8 @@ def dibujar_editor():
                     y1,
                     x2,
                     y2,
-                    fill="#222222",
-                    outline="black"
+                    fill="#87ceeb",
+                    outline="#5ba9d6"
                 )
                 canvas.create_polygon(
                     x1 + 5,
@@ -1983,27 +1977,24 @@ def dibujar_editor():
         font=("Arial", 9, "bold")
     )
 
-
+#Procedimiento para cerrar el juego
 def cerrar_juego():
     detener_musica()
     ventana.destroy()
 ventana.protocol("WM_DELETE_WINDOW", cerrar_juego)
-# ======================================================
-# INICIO
-# ======================================================
+
+# --------
+# INICIAR
+# --------
 
 buscar_inicio()
 buscar_enemigos_moviles()
 
 ventana.bind("<KeyPress>", tecla_presionada)
 ventana.bind("<KeyRelease>", tecla_soltada)
-
 canvas.bind("<Button-1>", click_editor)
 
 iniciar_musica()
-
 mostrar_menu_principal()
-
 ciclo_juego()
-
 ventana.mainloop()
