@@ -3,9 +3,6 @@ Requisitos:
 - Tkinter
 - Sistema Windows para música con winsound
 
-Ejecución:
-python main.py
-
 Archivos necesarios:
 - main.py
 - musica.wav
