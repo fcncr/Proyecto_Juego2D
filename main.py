@@ -1971,32 +1971,14 @@ def dibujar_editor():
                     font=("Arial", 7, "bold")
                 )
 
-    canvas.create_rectangle(
-        5,
-        5,
-        360,
-        55,
-        fill="white",
-        outline="black"
-    )
-
     canvas.create_text(
-        15,
-        15,
-        text="MODO EDITOR",
-        anchor="nw",
-        fill="black",
-        font=("Arial", 10, "bold")
-    )
-
-    canvas.create_text(
-        15,
-        33,
-        text="Herramienta: " + nombre_herramienta() + " | Puntaje base: " + str(calcular_puntaje_mapa()),
-        anchor="nw",
-        fill="black",
-        font=("Arial", 9, "bold")
-    )
+    ANCHO - 10,
+    10,
+    text="Puntaje: " + str(calcular_puntaje_mapa()),
+    anchor="ne",
+    fill="black",
+    font=("Arial", 9, "bold")
+)
 
 #Procedimiento para cerrar el juego
 def cerrar_juego():
