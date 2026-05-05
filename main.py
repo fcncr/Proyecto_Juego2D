@@ -36,7 +36,20 @@ matriz = [
     [6, 0, 0, 5, 5, 0, 0, 5, 0, 0, 0, 2, 0, 4, 0, 0],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 ]
-
+matriz_original = [
+    [0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 2, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 0],
+    [0, 0, 2, 0, 0, 0, 2, 3, 7, 4, 0, 0, 4, 0, 0, 2],
+    [0, 0, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2],
+    [0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+    [0, 4, 2, 0, 0, 4, 2, 0, 0, 0, 0, 2, 0, 0, 0, 2],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 5, 2],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 1, 2],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0],
+    [6, 0, 0, 5, 5, 0, 0, 5, 0, 0, 0, 2, 0, 4, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+]
 FILAS = len(matriz)
 COLUMNAS = len(matriz[0])
 ANCHO = COLUMNAS * TAM #Tamaño en pixeles del ancho
@@ -804,6 +817,7 @@ boton_musica_juego.pack(side="right", padx=8, pady=8)
 marco_editor = tk.Frame(ventana, bg="#111827")
 
 
+
 fila_editor_1 = tk.Frame(marco_editor, bg="#111827")
 fila_editor_1.pack(pady=4)
 
@@ -833,7 +847,34 @@ def crear_boton_herramienta(marco, texto, valor, color):
     boton.pack(side="left", padx=4)
     return boton
 
+#Procedimento restaurar mapa original
+def restaurar_mapa_original():
+    global matriz
 
+    for fila in range(FILAS):
+        for col in range(COLUMNAS):
+            matriz[fila][col] = matriz_original[fila][col]
+
+    buscar_inicio()
+    buscar_enemigos_moviles()
+    dibujar_editor()
+
+boton_restaurar = tk.Button(
+    marco_editor,
+    text="Restaurar original",
+    font=("Arial", 9, "bold"),
+    bg="#0f766e",
+    fg="white",
+    activebackground="#5eead4",
+    activeforeground="black",
+    relief="flat",
+    bd=0,
+    padx=10,
+    pady=7,
+    cursor="hand2",
+    command=restaurar_mapa_original
+)
+boton_restaurar.pack(side="bottom", padx=4, pady=5)
 boton_borrar = crear_boton_herramienta(fila_editor_1, "Borrar", 0, "#6b7280")
 boton_bloque = crear_boton_herramienta(fila_editor_1, "Bloque", 1, "#8b5a2b")
 boton_escalera = crear_boton_herramienta(fila_editor_1, "Escalera", 2, "#a16207")
@@ -1523,6 +1564,7 @@ def ciclo_juego():
 # ----------------
 # EDITOR DE MAPAS
 # ----------------
+
 #Función para seleccionar la herramienta correcta
 #Entrada: el valor del elemento que deseamos colcoar
 #Salida: 
